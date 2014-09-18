@@ -1,0 +1,21 @@
+<package>
+  <description brief="camera_cb_detector">
+
+     camera_cb_detector
+
+  </description>
+  <author>Allison Thackston</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/camera_cb_detector</url>
+  <depend package="roscpp"/>
+  <depend package="rospy"/>
+  <depend package="actionlib"/>
+  <depend package="image_geometry"/>
+  <depend package="calibration_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="cv_bridge"/>
+
+</package>
+
+
