@@ -1,0 +1,14 @@
+msg/MonoCalibratorAction.msg
+msg/MonoCalibratorActionFeedback.msg
+msg/MonoCalibratorActionGoal.msg
+msg/MonoCalibratorActionResult.msg
+msg/MonoCalibratorFeedback.msg
+msg/MonoCalibratorGoal.msg
+msg/MonoCalibratorResult.msg
+msg/StereoCalibratorAction.msg
+msg/StereoCalibratorActionFeedback.msg
+msg/StereoCalibratorActionGoal.msg
+msg/StereoCalibratorActionResult.msg
+msg/StereoCalibratorFeedback.msg
+msg/StereoCalibratorGoal.msg
+msg/StereoCalibratorResult.msg

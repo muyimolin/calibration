@@ -1,0 +1,40 @@
+<launch>
+  <arg name="image" />
+  <arg name="camera" />
+  <arg name="autostart" default="True" />
+  <arg name="num_cols" default="8" />
+  <arg name="num_rows" default="6" />
+  <arg name="dim" default="1" />
+  <arg name="pattern" default="0" />
+  <arg name="use_service" default="True" />
+  <arg name="driver" default="$(arg camera)/driver"/>
+  <arg name="features" default="$(arg camera)/features" />
+  <arg name="camera_info" default="$(arg camera)/camera_info" />
+  <arg name="image_view" default="$(arg camera)/image_color" />
+  <arg name="camera_name" default="camera" />
+  <arg name="file_name" default="camera.yaml" />
+
+
+  <include file="$(find camera_cb_detector)/launch/camera_cb_detector.launch" ns="$(arg camera)">
+    <arg name="image" value="$(arg image)" />
+    <arg name="image_view" value="$(arg image_view)" />
+    <arg name="scaling" value="0.25" />
+    <arg name="autostart" value="$(arg autostart)" />
+    <arg name="num_rows" value="$(arg num_rows)" />
+    <arg name="num_cols" value="$(arg num_cols)" />
+    <arg name="dim" value="$(arg dim)" />
+    <arg name="pattern" value="$(arg pattern)" />
+  </include>
+
+  <node type="mono_calibrator.py"
+      pkg="camera_intrinsic_calibrator"
+      name="mono_calibrator"
+      args="--autostart $(arg autostart) --use_service $(arg use_service) --camera_name $(arg camera_name) --file_name $(arg file_name)"
+      output="screen"
+      required="true">
+      <remap from="autostart" to="autostart" />
+      <remap from="camera" to="$(arg driver)" />
+      <remap from="features" to="$(arg features)" />
+      <remap from="camera_info" to="$(arg camera_info)" />
+  </node>
+</launch>

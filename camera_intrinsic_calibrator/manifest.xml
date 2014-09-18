@@ -1,0 +1,22 @@
+<package>
+  <description brief="camera_intrinsic_calibrator">
+
+     camera_intrinsic_calibrator
+
+  </description>
+  <author>Allison Thackston</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/nasa_r2_vision_calibration</url>
+  <depend package="roscpp"/>
+  <depend package="rospy"/>
+  <depend package="camera_cb_detector"/>
+  <depend package="calibration_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="message_filters"/>
+  <depend package="cv_bridge"/>
+
+</package>
+
+

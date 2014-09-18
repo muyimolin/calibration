@@ -1,0 +1,57 @@
+<launch>
+  <arg name="left_camera" />
+  <arg name="right_camera" />
+  <arg name="right" />
+  <arg name="left" />
+
+  <arg name="autostart" default="True" />
+  <arg name="approximate" default="0.0" />
+  <arg name="use_service" default="True" />
+  <arg name="num_cols" default="8" />
+  <arg name="num_rows" default="6" />
+  <arg name="dim" default="0.02943" />
+  <arg name="pattern" default="0" />
+
+  <arg name="left_driver" default="$(arg left_camera)/driver"/>
+  <arg name="left_features" default="$(arg left_camera)/features" />
+  <arg name="left_camera_info" default="$(arg left_camera)" />
+  <arg name="left_image_view" default="$(arg left_camera)/image_color" />
+
+  <arg name="right_driver" default="$(arg right_camera)/driver"/>
+  <arg name="right_features" default="$(arg right_camera)/features" />
+  <arg name="right_camera_info" default="$(arg right_camera)" />
+  <arg name="right_image_view" default="$(arg right_camera)/image_color" />
+
+
+  <include file="$(find camera_cb_detector)/launch/camera_cb_detector.launch" ns="$(arg left_camera)" >
+    <arg name="image" value="$(arg left)" />
+    <arg name="image_view" value="$(arg left_image_view)" />
+    <arg name="autostart" value="$(arg autostart)" />
+    <arg name="num_rows" value="$(arg num_rows)" />
+    <arg name="num_cols" value="$(arg num_cols)" />
+    <arg name="dim" value="$(arg dim)" />
+    <arg name="pattern" value="$(arg pattern)" />
+  </include>
+
+    <include file="$(find camera_cb_detector)/launch/camera_cb_detector.launch" ns="$(arg right_camera)">
+      <arg name="image" value="$(arg right)"/>
+      <arg name="image_view" value="$(arg right_image_view)" />
+      <arg name="autostart" value="$(arg autostart)" />
+      <arg name="num_rows" value="$(arg num_rows)" />
+      <arg name="num_cols" value="$(arg num_cols)" />
+      <arg name="dim" value="$(arg dim)" />
+      <arg name="pattern" value="$(arg pattern)" />
+    </include>
+
+  <node type="stereo_calibrator.py"
+      pkg="camera_intrinsic_calibrator"
+      name="stereo_calibrator"
+      args="--autostart $(arg autostart) --approximate $(arg approximate) --use_service $(arg use_service)"
+      output="screen"
+      required="true">
+    <remap from="left_camera" to="$(arg left_driver)"/>
+    <remap from="right_camera" to="$(arg right_driver)"/>
+    <remap from="left" to="$(arg left_camera)"/>
+    <remap from="right" to="$(arg right_camera)"/>
+  </node>
+</launch>
