@@ -1,0 +1,7 @@
+msg/CaptureManagerAction.msg
+msg/CaptureManagerActionFeedback.msg
+msg/CaptureManagerActionGoal.msg
+msg/CaptureManagerActionResult.msg
+msg/CaptureManagerFeedback.msg
+msg/CaptureManagerGoal.msg
+msg/CaptureManagerResult.msg

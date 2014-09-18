@@ -1,0 +1,2 @@
+string id
+string config

@@ -1,0 +1,28 @@
+r_arm_controller:
+  topic: cal_controller/command
+  joint_names:
+  - /r2/right_arm/joint0
+  - /r2/right_arm/joint1
+  - /r2/right_arm/joint2
+  - /r2/right_arm/joint3
+  - /r2/right_arm/joint4
+  - /r2/right_arm/wrist/pitch
+  - /r2/right_arm/wrist/yaw
+
+l_arm_controller:
+  topic: cal_controller/command
+  joint_names:
+  - /r2/left_arm/joint0
+  - /r2/left_arm/joint1
+  - /r2/left_arm/joint2
+  - /r2/left_arm/joint3
+  - /r2/left_arm/joint4
+  - /r2/left_arm/wrist/pitch
+  - /r2/left_arm/wrist/yaw
+
+head_controller:
+  topic: cal_controller/command
+  joint_names:
+  - /r2/neck/joint0
+  - /r2/neck/joint1
+  - /r2/neck/joint2
