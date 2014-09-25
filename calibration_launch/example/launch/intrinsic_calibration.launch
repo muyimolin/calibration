@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find calibration_launch)/example/launch/viewers.launch"/>
+  <include file="$(find calibration_launch)/example/launch/raw_pipelines.launch"/>
+  <include file="$(find calibration_launch)/example/launch/capture_exec.launch"/>
+</launch>

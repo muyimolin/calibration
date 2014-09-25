@@ -7,7 +7,6 @@
         pkg="image_view"
         name="annotated_viewer">
     <remap from="image" to="$(arg image_topic)" />
-cb_annotated_image
     <param name="autosize" type="bool" value="$(arg autosize)" />
   </node>
 

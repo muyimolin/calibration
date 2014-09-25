@@ -15,7 +15,7 @@
   <depend package="image_view" />
   <depend package="message_filters"/>
   <depend package="sensor_msgs"/>
-
+  <depend package="calibration_capture"/>
   <depend package="monocam_settler"/>
   <depend package="joint_states_settler"/>
   <depend package="interval_intersection"/>

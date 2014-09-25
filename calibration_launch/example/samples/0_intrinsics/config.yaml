@@ -1,0 +1,4 @@
+group: Intrinsic
+prompt: "Please place the 8x6 checkerboard in front of the camera"
+finish: "Done collecting intrinsic samples"
+repeat: True

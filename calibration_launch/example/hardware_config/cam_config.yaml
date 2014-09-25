@@ -1,0 +1,18 @@
+# ----- Camera -----
+camera:
+  cb_detector_config:  /camera/calibration_detector
+  settler_config:      /camera/monocam_settler_config
+
+  configs:
+    cb_8x6:
+      settler:
+        tolerance: 10.00
+        ignore_failures: True
+        max_step: 1.0
+        cache_size: 100
+      cb_detector:
+        active: True
+        num_x: 8
+        num_y: 6
+        spacing_x: 0.0249
+        spacing_y: 0.0249
