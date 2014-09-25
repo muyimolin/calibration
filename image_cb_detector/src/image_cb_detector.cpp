@@ -47,6 +47,7 @@ using namespace std;
 bool ImageCbDetector::configure(const ConfigGoal& config)
 {
   config_ = config;
+
   return true;
 }
 

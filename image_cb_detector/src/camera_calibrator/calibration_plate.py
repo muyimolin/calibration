@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import roslib
-roslib.load_manifest("camera_cb_detector")
+roslib.load_manifest("image_cb_detector")
 import math
 import operator
 

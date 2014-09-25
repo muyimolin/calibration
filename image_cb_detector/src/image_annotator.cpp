@@ -81,6 +81,7 @@ ImageAnnotator::ImageAnnotator()
 void ImageAnnotator::processPair(const sensor_msgs::ImageConstPtr& image, const calibration_msgs::CalibrationPatternConstPtr& features)
 {
   try {
+
     cv_bridge::CvImageConstPtr cv_image = cv_bridge::toCvShare(image, "rgb8");
 
     // ***** Resize the image based on scaling parameters in config *****
@@ -113,6 +114,7 @@ void ImageAnnotator::processPair(const sensor_msgs::ImageConstPtr& image, const 
     }
 
     // Send the annotated image over ROS
+
     sensor_msgs::Image result_image = *(cv_bridge::CvImage(cv_image->header, cv_image->encoding, cv_image_scaled).toImageMsg());
     image_pub_.publish(result_image);
   } catch(cv_bridge::Exception & e) {

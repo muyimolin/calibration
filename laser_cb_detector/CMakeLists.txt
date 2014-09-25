@@ -15,6 +15,8 @@ genaction()
 
 rosbuild_init()
 
+rosbuild_genmsg()
+
 #set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
@@ -27,10 +29,11 @@ rosbuild_add_library(${PROJECT_NAME} src/cv_laser_bridge.cpp
 rosbuild_add_boost_directories()
 rosbuild_add_executable(laser_cb_detector_node src/laser_cb_detector_node.cpp)
 target_link_libraries(laser_cb_detector_node ${PROJECT_NAME})
+rosbuild_link_boost(laser_cb_detector_node thread)
 
 rosbuild_add_executable(laser_interval_calc_node src/laser_interval_calc_node.cpp)
 target_link_libraries(laser_interval_calc_node ${PROJECT_NAME})
 rosbuild_link_boost(laser_interval_calc_node signals)
 
-rosbuild_genmsg()
+
 add_subdirectory(test EXCLUDE_FROM_ALL)

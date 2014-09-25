@@ -3,9 +3,9 @@ import rospy
 import roslib
 import actionlib
 
-roslib.load_manifest("camera_cb_detector")
+roslib.load_manifest("image_cb_detector")
 from camera_calibrator.calibration_plate import *
-from camera_cb_detector.msg import *
+from image_cb_detector.msg import *
 from calibration_msgs.msg import CalibrationPattern
 from sensor_msgs.msg import Image, CameraInfo
 
@@ -44,7 +44,7 @@ class CalibrationDetectorServer:
 
     def img_callback(self, img):
         rospy.logdebug("[%s] Got new image message" % rospy.get_name())
-        if(self._featurePub and self._server.is_active()):
+        if(self._featurePub and self._board and self._server.is_active()):
             ok, corners, rgb, (x_scale, y_scale) = self._board.detect(img)
             msg = self._board.mk_pattern_msg(ok, corners)
             msg.header = img.header
