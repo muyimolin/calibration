@@ -2,6 +2,7 @@
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2008, Willow Garage, Inc.
+# Copyright (c) 2014, Oceaneering Space Systems and NASA
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,14 +32,15 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import roslib; roslib.load_manifest('calibration_manager')
+import roslib; roslib.load_manifest('calibration_capture')
 import rospy
 import yaml
 import sys
 import actionlib
+import calibration_capture.msg
 import joint_states_settler.msg
 import monocam_settler.msg
-import camera_cb_detector.msg
+import image_cb_detector.msg
 import laser_cb_detector.msg
 import interval_intersection.msg
 import time
@@ -80,45 +82,42 @@ class ConfigManager:
         # Set up interval_intersection
         self._intersect_ac = actionlib.SimpleActionClient("interval_intersection_config", interval_intersection.msg.ConfigAction)
 
-    def reconfigure(self, config):
+    def reconfigure(self, goal):
         # Reconfigure Interval Intersection
 
+        rospy.logdebug("[ConfigManager] Reconfiguring intersection")
         intersect_goal = interval_intersection.msg.ConfigGoal();
         #build intersect goals
-        topics = []
-        if "camera_measurements" in config:
-            topics = topics + [x['cam_id'] for x in config["camera_measurements"]]
-        if "joint_measurements" in config:
-            topics = topics + [x['chain_id'] for x in config["joint_measurements"]]
-        if "laser_measurements" in config:
-            topics = topics + [x['laser_id'] for x in config["laser_measurements"]]
+        topics = [x.id for x in goal.camera_measurements] + [x.id for x in goal.joint_measurements] + [x.id for x in goal.laser_measurements]
+        
         intersect_goal.topics = topics
         self._intersect_ac.send_goal(intersect_goal)
 
         # Reconfigure the cameras
-        rospy.logdebug("Reconfiguring The Cameras")
-        if "camera_measurements" in config:
-            for cur_cam in config["camera_measurements"]:
-                self._cam_managers[cur_cam["cam_id"]].reconfigure(cur_cam["config"])
+        rospy.logdebug("[ConfigManager] Reconfiguring The Cameras")
+        for cur_cam in goal.camera_measurements:
+            if cur_cam.id in self._cam_managers:
+                self._cam_managers[cur_cam.id].reconfigure(cur_cam.config)
 
         # Reconfigure the chains
-        rospy.logdebug("Reconfiguring The Chains")
-        if "joint_measurements" in config:
-            for cur_chain in config["joint_measurements"]:
-                self._chain_managers[cur_chain["chain_id"]].reconfigure(cur_chain["config"])
+        rospy.logdebug("[ConfigManager] Reconfiguring The Chains")
+        for cur_chain in goal.joint_measurements:
+            if cur_chain.id in self._chain_managers:
+                self._chain_managers[cur_chain.id].reconfigure(cur_chain.config)
 
         # Reconfigure the lasers
-        rospy.logdebug("Reconfiguring The Lasers")
-        if "laser_measurements" in config:
-            for cur_laser in config["laser_measurements"]:
-                self._laser_managers[cur_laser["laser_id"]].reconfigure(cur_laser["config"])
+        rospy.logdebug("[ConfigManager] Reconfiguring The Lasers")
+        for cur_laser in goal.laser_measurements:
+            if cur_laser.id in self._laser_managers:
+                self._laser_managers[cur_laser.id].reconfigure(cur_laser.config)
 
         # Send controller commands
-        rospy.logdebug("Sending Controller Commands")
-        if "joint_commands" in config:
-            for cur_controller in config["joint_commands"]:
-                self._controller_managers[cur_controller["controller"]].send_command(cur_controller)
+        rospy.logdebug("[ConfigManager] Sending Controller Commands")
+        for cur_controller in goal.joint_commands:
+            if cur_controller.controller in self._controller_managers:
+                self._controller_managers[cur_controller.controller].send_command(cur_controller.segments)
 
+        
     def stop(self):
         pass
 
@@ -142,9 +141,9 @@ class ChainConfigManager:
     # we're already in the correct configuration
     def reconfigure(self, next_config_name):
         if self._state == next_config_name:
-            rospy.logdebug("  %s: Configured correctly as [%s]" % (self_.chain_id, self._state))
+            rospy.logdebug("[ChainConfigManager] [%s]: Configured correctly as [%s]" % (self_.chain_id, self._state))
         else:
-            rospy.logdebug("  %s: Need to transition [%s] -> [%s]" % (self._chain_id, self._state, next_config_name))
+            rospy.logdebug("[ChainConfigManager] [%s]: Need to transition [%s] -> [%s]" % (self._chain_id, self._state, next_config_name))
 
             next_config   = self._configs["configs"][next_config_name]
             settler_config = next_config["settler"]
@@ -156,6 +155,7 @@ class ChainConfigManager:
             goal.cache_size  = settler_config["cache_size"]
 
             # Send the goal out
+            rospy.logdebug("[ChainConfigManager] [%s]: New config:\n%s" % (self._chain_id, str(goal)))
             self._settler_ac.send_goal(goal)
 
             # TODO: Need to add code that waits for goal to activate
@@ -171,7 +171,7 @@ class CameraConfigManager:
 
         # Initialize the ActionClients and state
         self._settler_ac   = actionlib.SimpleActionClient(self._configs["settler_config"], monocam_settler.msg.ConfigAction)
-        self._led_detector_ac  = actionlib.SimpleActionClient(self._configs["cb_detector_config"], camera_cb_detector.msg.ConfigAction)
+        self._cb_detector_ac  = actionlib.SimpleActionClient(self._configs["cb_detector_config"], image_cb_detector.msg.ConfigAction)
         self._state = "idle"
 
     # Check to make sure that config dict has all the necessary fields. TODO: Currently a stub
@@ -182,9 +182,9 @@ class CameraConfigManager:
     # we're already in the correct configuration
     def reconfigure(self, next_config_name):
         if self._state == next_config_name:
-            rospy.logdebug("  %s: Configured correctly as [%s]" % (self_.cam_id, self._state))
+            rospy.logdebug("[CameraConfigManager] [%s]: Configured correctly as [%s]" % (self_.cam_id, self._state))
         else:
-            rospy.logdebug("  %s: Need to transition [%s] -> [%s]" % (self._cam_id, self._state, next_config_name))
+            rospy.logdebug("[CameraConfigManager] [%s]: Need to transition [%s] -> [%s]" % (self._cam_id, self._state, next_config_name))
 
             next_config   = self._configs["configs"][next_config_name]
 
@@ -195,27 +195,44 @@ class CameraConfigManager:
             goal.ignore_failures = settler_config["ignore_failures"]
             goal.max_step = rospy.Duration(settler_config["max_step"])
             goal.cache_size  = settler_config["cache_size"]
+            rospy.logdebug("[CameraConfigManager] [%s] settler goal:\n%s" % (self._cam_id, str(goal)))
             self._settler_ac.send_goal(goal)
 
             # Send the CB Detector Goal
             cb_detector_config = next_config["cb_detector"]
             if not cb_detector_config["active"]:
                 rospy.logerr("Can't deal with inactive cb_detector")
-            goal = camera_cb_detector.msg.ConfigGoal()
+            goal = image_cb_detector.msg.ConfigGoal()
             goal.num_x = cb_detector_config["num_x"]
             goal.num_y = cb_detector_config["num_y"]
-            goal.spacing_x = 1.0    # Hardcoded garbage value. Should eventually be removed from the msg
-            goal.spacing_y = 1.0    # Hardcoded garbage value. Should eventually be removed from the msg
-            goal.width_scaling = cb_detector_config["width_scaling"]
-            goal.height_scaling = cb_detector_config["height_scaling"]
-            goal.subpixel_window = cb_detector_config["subpixel_window"]
-            goal.subpixel_zero_zone = cb_detector_config["subpixel_zero_zone"]
-            self._led_detector_ac.send_goal(goal)
+            goal.spacing_x = cb_detector_config["spacing_x"]
+            goal.spacing_y = cb_detector_config["spacing_y"]
+            if "width_scaling" in cb_detector_config:
+                goal.width_scaling = cb_detector_config["width_scaling"]
+            else:
+                goal.width_scaling = 1
+            if "height_scaling" in cb_detector_config:
+                goal.height_scaling = cb_detector_config["height_scaling"]
+            else:
+                goal.height_scaling = 1
+            if "subpixel_window" in cb_detector_config:
+                goal.subpixel_window = cb_detector_config["subpixel_window"]
+            else:
+                goal.subpixel_window = 4
+            if "subpixel_zero_zone" in cb_detector_config:
+                goal.subpixel_zero_zone = cb_detector_config["subpixel_zero_zone"]
+            else:
+                goal.subpixel_zero_zone = 1
+            
+            rospy.logdebug("[CameraConfigManager] [%s] cb goal:\n%s" % (self._cam_id, str(goal)))
+            self._cb_detector_ac.send_goal(goal)
 
             # Send the LED Detector Goal
-            led_detector_config = next_config["led_detector"]
-            if led_detector_config["active"]:
-                rospy.logerr("Can't deal with an active led_detector")
+            if "led_detector" in cb_detector_config:
+                print "found led_detector"
+                led_detector_config = cb_detector_config["led_detector"]
+                if led_detector_config["active"]:
+                    rospy.logerr("Can't deal with an active led_detector")
 
             # TODO: Need to add code that waits for goal to activate
 
@@ -240,9 +257,9 @@ class LaserConfigManager:
     # we're already in the correct configuration
     def reconfigure(self, next_config_name):
         if self._state == next_config_name:
-            rospy.logdebug("  %s: Configured correctly as [%s]" % (self_.laser_id, self._state))
+            rospy.logdebug("[LaserConfigManager] [%s]: Configured correctly as [%s]" % (self_.laser_id, self._state))
         else:
-            rospy.logdebug("  %s: Need to transition [%s] -> [%s]" % (self._laser_id, self._state, next_config_name))
+            rospy.logdebug("[LaserConfigManager] [%s]: Need to transition [%s] -> [%s]" % (self._laser_id, self._state, next_config_name))
 
             next_config   = self._configs["configs"][next_config_name]
 
@@ -253,6 +270,7 @@ class LaserConfigManager:
             goal.ignore_failures = settler_config["ignore_failures"]
             goal.max_step = rospy.Duration(settler_config["max_step"])
             goal.cache_size  = settler_config["cache_size"]
+            rospy.logdebug("[LaserConfigManager] [%s] settler goal:\n%s" % (self._laser_id, str(goal)))
             self._settler_ac.send_goal(goal)
 
             # Send the CB Detector Goal
@@ -271,6 +289,7 @@ class LaserConfigManager:
             goal.flip_horizontal = cb_detector_config["flip_horizontal"]
             goal.min_intensity = cb_detector_config["min_intensity"]
             goal.max_intensity = cb_detector_config["max_intensity"]
+            rospy.logdebug("[LaserConfigManager] [%s] cb goal:\n%s" % (self._laser_id, str(goal)))
             self._cb_detector_ac.send_goal(goal)
 
             # TODO: Need to add code that waits for goal to activate
@@ -295,11 +314,12 @@ class ControllerCmdManager:
     # Reconfigure this chain's processing pipeline to the specified configuration. Do nothing if
     # we're already in the correct configuration
     def send_command(self, cmd):
-        rospy.logdebug("  Sending cmd to controller [%s]"%self._controller_id)
+        rospy.loginfo("[ControllerCmdManager] Sending cmd to controller [%s]"%self._controller_id)
         cmd_msg = JointTrajectory()
         cmd_msg.header.stamp = rospy.Time().now()
         cmd_msg.joint_names = self._config["joint_names"]
-        cmd_msg.points = [self._build_segment(x) for x in cmd["segments"]]
+        cmd_msg.points.append(cmd)
+        rospy.logdebug("[ControllerCmdManager] [%s]: Command\n%s" % (self._controller_id, str(cmd_msg)))
         self._pub.publish(cmd_msg)
 
     def _build_segment(self, config):

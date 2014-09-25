@@ -1,13 +1,46 @@
 #!/usr/bin/env python
+# Software License Agreement (BSD License)
+#
+# Copyright (c) 2014, Oceaneering Space Systems, NASA
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+#  * Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above
+#    copyright notice, this list of conditions and the following
+#    disclaimer in the documentation and/or other materials provided
+#    with the distribution.
+#  * Neither the name of Oceaneering Space Systems or NASA nor the names of its
+#    contributors may be used to endorse or promote products derived
+#    from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+# Author: Allison Thackston
 
-import roslib; roslib.load_manifest('calibration_manager')
+import roslib; roslib.load_manifest('calibration_capture')
 import rospy
 import yaml
 import threading
 import actionlib
-roslib.load_manifest('calibration_manager')
 from urdf_python.urdf import *
-from calibration_manager.msg import *
+from calibration_capture.msg import *
+from calibration_msgs.msg import *
 from capture_executive.config_manager import *
 from capture_executive.sensor_managers import *
 from capture_executive.robot_measurement_cache import RobotMeasurementCache
@@ -92,7 +125,12 @@ class CaptureManagerServer:
         # Create measurement cache
         self.cache = RobotMeasurementCache()
         
-        # set up publisher
+        # Set up goals
+        self.goal_sample_id = None
+        self.goal_target_id = None
+        self.goal_chain_id  = None
+        
+        # Set up publisher
         self.result = rospy.Publisher("robot_measurement", RobotMeasurement)
         
         # Subscribe to topic containing stable intervals
@@ -106,60 +144,32 @@ class CaptureManagerServer:
         self._server = actionlib.SimpleActionServer('capture_manager', CaptureManagerAction, None, False)
         self._server.register_goal_callback(self.goal_callback)
         self._server.register_preempt_callback(self.preempt_callback)
+        self._server.start()
+
+        
         
     def goal_callback(self):
         goal = self._server.accept_new_goal()
         rospy.loginfo("[%s] Setting calibration configuration" % rospy.get_name())
         
-        # fill in only valid cameras
-        camera_measurements = goal.camera_measurements
-        next_configuration["camera_measurements"] = []
-        cam_ids = []
-        for (i, cam) in enumerate(camera_measurements):
-            if self.cam_config.has_key(cam.id):
-                next_configuration["camera_measurements"].append({'cam_id': cam.id, 'config': cam.config})
-                cam_ids.append(cam.id)
-            else:
-                rospy.logdebug("Not capturing measurement for camera: %s"%(cam.id))
-                
-        # fill in only valid lasers
-        laser_measurements = goal.laser_measurements
-        next_configuration["laser_measurements"] = []
-        laser_ids = []
-        for (i, laser) in enumerate(laser_measurements):
-            if self.laser_config.has_key(laser.id):
-                next_configuration["laser_measurements"].append({'laser_id': laser.id, 'config': laser.config})
-                laser_ids.append(laser.id)
-            else:
-                rospy.logdebug("Not capturing measurement for laser: %s"%(laser.id))
-                
-        # fill in only valid chains
-        joint_measurements = goal.joint_measurements
-        next_configuration["joint_measurements"] = []
-        chain_ids = []
-        for (i, chain) in enumerate(joint_measurements):
-            if self.chain_config.has_key(chain.id):
-                next_configuration["joint_measurements"].append({'chain_id': chain.id, 'config': chain.config})
-                chain_ids.append(chain.id)
-            else:
-                rospy.logdebug("Not capturing measurement for chain: %s"%(chain.id))
-                
-        # fill in valid joint_commands
-        joint_commands = next_configuration.joint_commands
-        next_configuration["joint_commands"] = []
-        for(i, command) in enumerate(joint_commands):
-            if self.controller_config.has_key(command.controller):
-                next_configuration["joint_commands"].append({'controller': command.controller, 'segments': {'duration': command.segments.duration, 'positions': command.segments.positions}})
-            else:
-                rospy.debug("Not commanding controller: %s" % (command.controller))
+        # get ids
+        cam_ids = [x.id for x in goal.camera_measurements]
+        laser_ids = [x.id for x in goal.laser_measurements]
+        chain_ids = [x.id for x in goal.joint_measurements]
+        
+        self.goal_sample_id = goal.sample_id
+        self.goal_target_id = goal.target_id
+        self.goal_chain_id  = goal.chain_id
                 
         # Set up the pipeline
-        self.config_manager.reconfigure(next_configuration)
+        self.config_manager.reconfigure(goal)
         
         # Set up cache
         self.cache.reconfigure(cam_ids, chain_ids, laser_ids)
-        
+
         # Set up the sensor managers
+        enable_list = []
+        disable_list = []
         for cam_id, cam_manager in self.cam_managers:
             if cam_id in cam_ids:
                 enable_list.append(cam_id)
@@ -184,53 +194,66 @@ class CaptureManagerServer:
                 disable_list.append(laser_id)
                 laser_manager.disable()
         
-        self.m_robot = None
+        if self._server.is_preempt_requested():
+            self._server.set_preempted()
+            return
     
-    def preempt_callback():
+    def preempt_callback(self):
+        rospy.loginfo("[%s] preemting..." % rospy.get_name())
         self._server.set_preempted()
-        self.lock.aquire()
+        self.lock.acquire()
         self.cache.clear()
-        self.locl.release()        
+        self.lock.release()        
         
     def request_callback(self, msg):
         # See if the interval is big enough to care
+        # TODO: make this a property
         if (msg.end - msg.start) < rospy.Duration(1,0):
             return
         
-        if(self._server.is_active() and not self.m_robot):
-            self.lock.aquire()
+        if(self._server.is_active() and self.goal_sample_id):
+            self.lock.acquire()
             m = self.cache.request_robot_measurement(msg.start, msg.end)
             if isinstance(m, basestring):
                 self.message = m
             else:
-                self.m_robot = m
-                self._server.set_succeeded(self.m_robot)
-                result.publish(self.m_robot)
+                m.sample_id = self.goal_sample_id
+                m.target_id = self.goal_target_id
+                m.chain_id  = self.goal_chain_id
+                msg = CaptureManagerResult()
+                msg.result = m
+                # Set succeeded
+                self._server.set_succeeded(msg)
+                # Publish RobotMeasurement
+                self.result.publish(m)
+                # Reset ids
+                self.goal_sample_id = None
+                self.goal_target_id = None
+                self.goal_chain_id  = None
             self.lock.release()
                 
         
     def status_callback(self, msg):
-        if(self._server.is_active() and not self.m_robot):
-            self.lock.aquire()
+        if(self._server.is_active() and self.goal_sample_id):
+            self.lock.acquire()
             self.interval_status=msg
             self.lock.release()
             
     def add_cam_measurement(self, cam_id, msg):
-        if (msg.success and 
-            self._servier.is_active() and not self.m_robot):
-            self.lock.aquire()
+        if (self._server.is_active() and self.goal_sample_id):
+            self.lock.acquire()
             self.cache.add_cam_measurement(cam_id, msg)
             self.lock.release()
             
     def add_chain_measurement(self, chain_id, msg):
-        if(self._server.is_active() and not self.m_robot):
-            self.lock.aquire()
+        if(self._server.is_active() and self.goal_sample_id):
+            self.lock.acquire()
             self.cache.add_chain_measurement(chain_id, msg)
             self.lock.release()
         
     def add_laser_measurement(self, laser_id, msg, interval_start, interval_end):
-        if(self._server.is_active() and not self.m_robot):
-            self.lock.aquire
+        if(self._server.is_active() and self.goal_sample_id):
+            self.lock.acquire
             self.cache.add_laser_measurement(laser_id, msg, interval_start, interval_end)
             self.lock.release()
             

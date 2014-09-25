@@ -1,0 +1,12 @@
+<launch>
+  <arg name="hardware_config"/>
+  <arg name="system_config"/>
+
+  <node type="capture_manager.py"
+        pkg="calibration_capture"
+        name="capture_manager"
+        args="-c $(arg hardware_config) -s $(arg system_config)"
+        output="screen">
+  </node>
+
+</launch>

@@ -246,7 +246,7 @@ class Inertial:
 
 class Joint:
     def __init__(self, name, parent, child, joint_type, axis=None, origin=None, limits=None,
-                    dynamics=None, safety=None, calibration=None, mimic=None):
+                    dynamics=None, safety=None, calibration=None, mimic=None, traits=None, joint_properties=None):
         self.name = name
         self.parent = parent
         self.child = child
@@ -258,6 +258,8 @@ class Joint:
         self.safety = safety
         self.calibration = calibration
         self.mimic = mimic
+        self.traits = traits
+        self.joint_properties = joint_properties
 
     @staticmethod
     def parse(node):
@@ -281,10 +283,8 @@ class Joint:
                 joint.calibration = JointCalibration.parse(child)
             elif child.localName == 'mimic':
                 joint.mimic = JointMimic.parse(child)
-            elif child.localName == 'traits':
-                pass
             else:
-                raise Exception("Unknown joint element '%s'"%child.localName)
+                pass
         return joint
 
     def to_xml(self, doc):

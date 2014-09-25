@@ -31,7 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import roslib; roslib.load_manifest('calibration_launch')
+import roslib; roslib.load_manifest('calibration_capture')
 import sys
 
 import rospy
@@ -106,6 +106,7 @@ class RobotMeasurementCache:
         req_center   = interval_start + rospy.Duration(req_duration.to_sec()*.5)
 
         if req_duration < min_duration:
+            return "duration not long enough"
             return None
 
         # Extract the cam measurements closest to the center of the interval

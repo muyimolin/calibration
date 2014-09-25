@@ -111,14 +111,15 @@ class CamManager:
     def minimal_callback(self, cam_info, features):
         self._lock.acquire()
         if self._mode is "minimal":
-            # Populate measurement message
-            msg = CameraMeasurement()
-            msg.header.stamp = cam_info.header.stamp
-            msg.camera_id = self._cam_id
-            msg.image_points = features.image_points
-            msg.cam_info = cam_info
-            msg.verbose = False
-            self._callback(self._cam_id, msg, *self._cb_args)
+            # Populate measurement message if successful capture
+            if features.success:
+                msg = CameraMeasurement()
+                msg.header.stamp = cam_info.header.stamp
+                msg.camera_id = self._cam_id
+                msg.image_points = features.image_points
+                msg.cam_info = cam_info
+                msg.verbose = False
+                self._callback(self._cam_id, msg, *self._cb_args)
         self._lock.release()
 
     def enable(self, verbose=False):
