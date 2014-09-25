@@ -15,7 +15,7 @@
   <arg name="file_name" default="camera.yaml" />
 
 
-  <include file="$(find camera_cb_detector)/launch/camera_cb_detector.launch" ns="$(arg camera)">
+  <include file="$(find image_cb_detector)/launch/image_cb_detector.launch" ns="$(arg camera)">
     <arg name="image" value="$(arg image)" />
     <arg name="image_view" value="$(arg image_view)" />
     <arg name="scaling" value="0.25" />

@@ -23,7 +23,7 @@
   <arg name="right_image_view" default="$(arg right_camera)/image_color" />
 
 
-  <include file="$(find camera_cb_detector)/launch/camera_cb_detector.launch" ns="$(arg left_camera)" >
+  <include file="$(find image_cb_detector)/launch/image_cb_detector.launch" ns="$(arg left_camera)" >
     <arg name="image" value="$(arg left)" />
     <arg name="image_view" value="$(arg left_image_view)" />
     <arg name="autostart" value="$(arg autostart)" />
@@ -33,7 +33,7 @@
     <arg name="pattern" value="$(arg pattern)" />
   </include>
 
-    <include file="$(find camera_cb_detector)/launch/camera_cb_detector.launch" ns="$(arg right_camera)">
+    <include file="$(find image_cb_detector)/launch/image_cb_detector.launch" ns="$(arg right_camera)">
       <arg name="image" value="$(arg right)"/>
       <arg name="image_view" value="$(arg right_image_view)" />
       <arg name="autostart" value="$(arg autostart)" />

@@ -10,7 +10,7 @@
   <url>http://ros.org/wiki/nasa_r2_vision_calibration</url>
   <depend package="roscpp"/>
   <depend package="rospy"/>
-  <depend package="camera_cb_detector"/>
+  <depend package="image_cb_detector"/>
   <depend package="calibration_msgs"/>
   <depend package="sensor_msgs"/>
   <depend package="geometry_msgs"/>
