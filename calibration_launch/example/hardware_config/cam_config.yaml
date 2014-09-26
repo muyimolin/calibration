@@ -1,6 +1,6 @@
 # ----- Camera -----
 camera:
-  cb_detector_config:  /camera/calibration_detector
+  cb_detector_config:  /camera/cb_detector_config
   settler_config:      /camera/monocam_settler_config
 
   configs:

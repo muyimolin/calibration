@@ -12,7 +12,7 @@
 
   <node type="calibration_detector.py"
         pkg="image_cb_detector"
-        name="calibration_detector"
+        name="cb_detector_config"
         args="--autostart $(arg autostart) --rows $(arg num_rows) --cols $(arg num_cols) --dim $(arg dim) --pattern $(arg pattern)"
         output="screen"
         required="true">
