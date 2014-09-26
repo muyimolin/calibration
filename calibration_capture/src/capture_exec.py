@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
-# Copyright (c) 2014, Oceaneering Space Systems, NASA
+# Copyright (c) 2014, Oceaneering Space Systems / NASA
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
