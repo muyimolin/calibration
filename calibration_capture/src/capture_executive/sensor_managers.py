@@ -2,6 +2,7 @@
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2008, Willow Garage, Inc.
+# Copyright (c) 2014, Oceaneering Space Systems / NASA
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -93,10 +94,10 @@ class CamManager:
             msg.camera_id = self._cam_id
             msg.image_points = features.image_points
             msg.cam_info = cam_info
+            msg.features = features
             msg.verbose = True
             msg.image = image
             msg.image_rect = image_rect
-            msg.features = features
             self._callback(self._cam_id, msg, *self._cb_args)
         self._lock.release()
 
@@ -110,6 +111,7 @@ class CamManager:
                 msg.camera_id = self._cam_id
                 msg.image_points = features.image_points
                 msg.cam_info = cam_info
+                msg.features = features
                 msg.verbose = False
                 self._callback(self._cam_id, msg, *self._cb_args)
         self._lock.release()
