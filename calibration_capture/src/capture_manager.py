@@ -149,9 +149,9 @@ class CaptureManagerServer:
         
         
     def goal_callback(self):
-        goal = self._server.accept_new_goal()
         rospy.loginfo("[%s] Setting calibration configuration" % rospy.get_name())
-        
+        goal = self._server.accept_new_goal()
+
         # get ids
         cam_ids = [x.id for x in goal.camera_measurements]
         laser_ids = [x.id for x in goal.laser_measurements]
@@ -163,9 +163,14 @@ class CaptureManagerServer:
                 
         # Set up the pipeline
         self.config_manager.reconfigure(goal)
+        rospy.logdebug("[%s] Set up pipelines" % rospy.get_name())
         
         # Set up cache
+        #self.lock.acquire()
+        self.cache.clear()
         self.cache.reconfigure(cam_ids, chain_ids, laser_ids)
+        rospy.logdebug("[%s] Configurating cache" % rospy.get_name())
+        #self.lock.release()
 
         # Set up the sensor managers
         enable_list = []
@@ -177,6 +182,8 @@ class CaptureManagerServer:
             else:
                 disable_list.append(cam_id)
                 cam_manager.disable()
+                
+        rospy.logdebug("[%s] Set up camera managers" % rospy.get_name())
 
         for chain_id, chain_manager in self.chain_managers:
             if chain_id in chain_ids:
@@ -185,6 +192,8 @@ class CaptureManagerServer:
             else:
                 disable_list.append(chain_id)
                 chain_manager.disable()
+                
+        rospy.logdebug("[%s] Set up chain managers" % rospy.get_name())
 
         for laser_id, laser_manager in self.laser_managers:
             if laser_id in laser_ids:
@@ -193,26 +202,46 @@ class CaptureManagerServer:
             else:
                 disable_list.append(laser_id)
                 laser_manager.disable()
+                
+        rospy.logdebug("[%s] Set up laser managers" % rospy.get_name())
         
         if self._server.is_preempt_requested():
+            rospy.loginfo("[%s] preempt detected during accept" % rospy.get_name())
             self._server.set_preempted()
-            return
     
     def preempt_callback(self):
         rospy.loginfo("[%s] preemting..." % rospy.get_name())
         self._server.set_preempted()
-        self.lock.acquire()
-        self.cache.clear()
-        self.lock.release()        
+        self.goal_sample_id = None
+        self.goal_target_id = None
+        self.goal_chain_id  = None
+        
+        #disable all the things
+        for cam_id, cam_manager in self.cam_managers:
+            cam_manager.disable()
+                
+        rospy.loginfo("[%s] Disabled camera managers" % rospy.get_name())
+
+        for chain_id, chain_manager in self.chain_managers:
+            chain_manager.disable()
+                
+        rospy.loginfo("[%s] Disabled chain managers" % rospy.get_name())
+
+        for laser_id, laser_manager in self.laser_managers:
+                laser_manager.disable()
+                
+        rospy.loginfo("[%s] Disabled laser managers" % rospy.get_name())      
         
     def request_callback(self, msg):
         # See if the interval is big enough to care
         # TODO: make this a property
+        rospy.logdebug("[%s] in request_callback" % rospy.get_name())
         if (msg.end - msg.start) < rospy.Duration(1,0):
             return
         
         if(self._server.is_active() and self.goal_sample_id):
-            self.lock.acquire()
+            rospy.logdebug("[%s] server active" % rospy.get_name())
+            #self.lock.acquire()
             m = self.cache.request_robot_measurement(msg.start, msg.end)
             if isinstance(m, basestring):
                 self.message = m
@@ -230,32 +259,34 @@ class CaptureManagerServer:
                 self.goal_sample_id = None
                 self.goal_target_id = None
                 self.goal_chain_id  = None
-            self.lock.release()
+            #self.lock.release()
                 
         
     def status_callback(self, msg):
         if(self._server.is_active() and self.goal_sample_id):
-            self.lock.acquire()
+            #self.lock.acquire()
             self.interval_status=msg
-            self.lock.release()
+            #self.lock.release()
             
     def add_cam_measurement(self, cam_id, msg):
         if (self._server.is_active() and self.goal_sample_id):
-            self.lock.acquire()
+            #self.lock.acquire()
             self.cache.add_cam_measurement(cam_id, msg)
-            self.lock.release()
+            #self.lock.release()
             
     def add_chain_measurement(self, chain_id, msg):
         if(self._server.is_active() and self.goal_sample_id):
-            self.lock.acquire()
+            rospy.logdebug("[%s] Adding chain measurement" % rospy.get_name())
+            #self.lock.acquire()
             self.cache.add_chain_measurement(chain_id, msg)
-            self.lock.release()
+            #self.lock.release()
+            rospy.logdebug("[%s] Finished adding chain measurement" % rospy.get_name())
         
     def add_laser_measurement(self, laser_id, msg, interval_start, interval_end):
         if(self._server.is_active() and self.goal_sample_id):
-            self.lock.acquire
+            #self.lock.acquire
             self.cache.add_laser_measurement(laser_id, msg, interval_start, interval_end)
-            self.lock.release()
+            #self.lock.release()
             
 if __name__=='__main__':
     rospy.init_node("capture_manager")

@@ -48,12 +48,9 @@ class ChainManager:
         self._cb_args = cb_args
         self._mode = "off"
 
-        self._lock = threading.Lock()
-
         self._chain_sub = rospy.Subscriber(chain_id + "/chain_state", sensor_msgs.msg.JointState, self.callback)
 
     def callback(self, msg):
-        self._lock.acquire()
         if self._mode is "on":
             # Populate measurement message
             m_msg = ChainMeasurement()
@@ -61,17 +58,12 @@ class ChainManager:
             m_msg.chain_id = self._chain_id
             m_msg.chain_state = msg
             self._callback(self._chain_id, m_msg, *self._cb_args)
-        self._lock.release()
 
     def enable(self):
-        self._lock.acquire()
         self._mode = "on"
-        self._lock.release()
 
     def disable(self):
-        self._lock.acquire()
         self._mode = "off"
-        self._lock.release()
 
 class CamManager:
     def __init__(self, cam_id, callback, *cb_args):

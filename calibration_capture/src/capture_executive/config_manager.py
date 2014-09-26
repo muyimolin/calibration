@@ -235,6 +235,7 @@ class CameraConfigManager:
                     rospy.logerr("Can't deal with an active led_detector")
 
             # TODO: Need to add code that waits for goal to activate
+            
 
 # Handles changing the configuration of the image pipeline associated with a camera
 class LaserConfigManager:
