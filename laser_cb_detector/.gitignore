@@ -1,3 +1,4 @@
+src/laser_cb_detector
 msg/ConfigAction.msg
 msg/ConfigActionFeedback.msg
 msg/ConfigActionGoal.msg

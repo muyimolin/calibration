@@ -5,5 +5,4 @@ lib/
 msg_gen/
 *.pyc
 */src/*/msg/
-*/src/*/__init__.py
 *.user

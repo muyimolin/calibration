@@ -1,3 +1,4 @@
+src/camera_intrinsic_calibrator/
 msg/MonoCalibratorAction.msg
 msg/MonoCalibratorActionFeedback.msg
 msg/MonoCalibratorActionGoal.msg

@@ -1,3 +1,4 @@
+src/calibration_capture/
 msg/CaptureManagerAction.msg
 msg/CaptureManagerActionFeedback.msg
 msg/CaptureManagerActionGoal.msg
