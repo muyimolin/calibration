@@ -79,14 +79,14 @@ class Chessboard(CalibrationPlate):
         w, h = cv.GetSize(img)
         mono = cv.CreateMat(h, w, cv.CV_8UC1)
         cv.CvtColor(img, mono, cv.CV_BGR2GRAY)
-        (ok, corners) = cv.FindChessboardCorners(mono, (self.n_cols, self.n_rows), cv.CV_CALIB_CB_ADAPTIVE_THRESH | cv.CV_CALIB_CB_NORMALIZE_IMAGE | cv2.CALIB_CB_FAST_CHECK)
+        (ok, corners) = cv.FindChessboardCorners(mono, (self.n_cols, self.n_rows), cv.CV_CALIB_CB_ADAPTIVE_THRESH | cv.CV_CALIB_CB_NORMALIZE_IMAGE )
         
         # If any corners are within BORDER pixels of the screen edge, reject the detection by setting ok to false
         # NOTE: This may cause problems with very low-resolution cameras, where 8 pixels is a non-negligible fraction
         # of the image size. See http://answers.ros.org/question/3155/how-can-i-calibrate-low-resolution-cameras
-        BORDER = 8
-        if not all([(BORDER < x < (w - BORDER)) and (BORDER < y < (h - BORDER)) for (x, y) in corners]):
-            ok = False
+        #BORDER = 8
+        #if not all([(BORDER < x < (w - BORDER)) and (BORDER < y < (h - BORDER)) for (x, y) in corners]):
+        #    ok = False
             
         if refine and ok:
             # Use a radius of half the minimum distance between corners. This should be large enough to snap to the
