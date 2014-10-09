@@ -3,6 +3,7 @@ uint16 num_y
 float32 spacing_x
 float32 spacing_y
 uint8 pattern
+uint8 flags
 
 # Specify how many times we want to upsample the image.
 #  This is often useful for detecting small checkerboards far away

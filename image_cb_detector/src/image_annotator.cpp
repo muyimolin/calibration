@@ -41,6 +41,7 @@
 #include <sensor_msgs/Image.h>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/subscriber.h>
 
@@ -59,6 +60,7 @@ private:
 
   // Params
   int marker_size_;
+  int marker_width_;
   double scaling_;
 };
 
@@ -73,9 +75,12 @@ ImageAnnotator::ImageAnnotator()
   ros::NodeHandle local_ns_("~");
 
   local_ns_.param("marker_size", marker_size_, 1);
+  local_ns_.param("marker_width", marker_width_, 1);
   local_ns_.param("scaling", scaling_, 1.0);
-  ROS_INFO("[marker_size]: %i", marker_size_);
-  ROS_INFO("[scaling]: %.3f", scaling_);
+
+  ROS_INFO("[%s][marker_size]: %i", ros::this_node::getName().c_str(), marker_size_);
+  ROS_INFO("[%s][marker_width]: %i", ros::this_node::getName().c_str(), marker_width_);
+  ROS_INFO("[%s][scaling]: %.3f", ros::this_node::getName().c_str(), scaling_);
 }
 
 void ImageAnnotator::processPair(const sensor_msgs::ImageConstPtr& image, const calibration_msgs::CalibrationPatternConstPtr& features)
@@ -88,19 +93,35 @@ void ImageAnnotator::processPair(const sensor_msgs::ImageConstPtr& image, const 
     const int scaled_width  = (int) (.5 + cv_image->image.cols  * scaling_);
     const int scaled_height = (int) (.5 + cv_image->image.rows * scaling_);
     cv::Mat cv_image_scaled;
-    cv::resize(cv_image->image, cv_image_scaled, 
+    cv::resize(cv_image->image, cv_image_scaled,
           cv::Size(scaled_width, scaled_height), 0, 0, CV_INTER_LINEAR);
 
     if (features->success)
     {
-      cv::Point2i pt0(features->image_points[0].x*scaling_, 
+       const int color_max = 7;
+       static const CvScalar colors[color_max] =
+       {
+         cvScalar(0,0,255),
+         cvScalar(0,128,255),
+         cvScalar(0,200,200),
+         cvScalar(0,255,0),
+         cvScalar(200,200,0),
+         cvScalar(255,0,0),
+         cvScalar(255,0,255)
+       };
+
+      cv::Point2i pt0(features->image_points[0].x*scaling_,
             features->image_points[0].y*scaling_);
-      cv::circle(cv_image_scaled, pt0, marker_size_*2, cvScalar(0,0,255), 1) ;
+      cv::circle(cv_image_scaled, pt0, marker_size_*2, cvScalar(0,0,255), marker_width_) ;
+      cv::Point2i prev_pt = pt0;
       for (unsigned int i=0; i<features->image_points.size(); i++)
       {
-        cv::Point2i pt(features->image_points[i].x*scaling_, 
+        CvScalar color = colors[i % color_max];
+        cv::Point2i pt(features->image_points[i].x*scaling_,
               features->image_points[i].y*scaling_);
-        cv::circle(cv_image_scaled, pt, marker_size_, cvScalar(0,255,0), 1) ;
+        cv::circle(cv_image_scaled, pt, marker_size_, color, 1);
+        cv::line(cv_image_scaled, prev_pt, pt, color, marker_width_);
+        prev_pt = pt;
       }
     }
     else
@@ -109,7 +130,7 @@ void ImageAnnotator::processPair(const sensor_msgs::ImageConstPtr& image, const 
       {
         cv::Point2i pt(features->image_points[i].x*scaling_,
               features->image_points[i].y*scaling_);
-        cv::circle(cv_image_scaled, pt, marker_size_, cvScalar(255,0,0), 1) ;
+        cv::circle(cv_image_scaled, pt, marker_size_, cvScalar(255,0,0), marker_width_) ;
       }
     }
 
@@ -118,7 +139,7 @@ void ImageAnnotator::processPair(const sensor_msgs::ImageConstPtr& image, const 
     sensor_msgs::Image result_image = *(cv_bridge::CvImage(cv_image->header, cv_image->encoding, cv_image_scaled).toImageMsg());
     image_pub_.publish(result_image);
   } catch(cv_bridge::Exception & e) {
-    ROS_ERROR("cv_bridge exception: %s", e.what());
+    ROS_ERROR("[%s] cv_bridge exception: %s", ros::this_node::getName().c_str(), e.what());
   }
 }
 

@@ -1,19 +1,19 @@
 <launch>
   <arg name="image"/>
-  <arg name="image_view"/>
   <arg name="viewer" default="True" />
   <arg name="marker_size" default="5"/>
   <arg name="scaling" default="0.5" />
   <arg name="autostart" default="False" />
   <arg name="num_rows" default="6" />
   <arg name="num_cols" default="8" />
-  <arg name="dim" default="0.02943" />
+  <arg name="dim" default="1" />
   <arg name="pattern" default="0" />
+  <arg name="flags" default="0" />
 
   <node type="calibration_detector.py"
         pkg="image_cb_detector"
         name="cb_detector_config"
-        args="--autostart $(arg autostart) --rows $(arg num_rows) --cols $(arg num_cols) --dim $(arg dim) --pattern $(arg pattern)"
+        args="--autostart $(arg autostart) --rows $(arg num_rows) --cols $(arg num_cols) --dim $(arg dim) --pattern $(arg pattern) --flags $(arg flags)"
         output="screen"
         required="true">
     <remap from="image_raw" to="$(arg image)" />
@@ -23,7 +23,7 @@
         pkg="image_cb_detector"
         name="calibration_annotator"
         output="screen">
-    <remap from="image" to="$(arg image_view)" />
+    <remap from="image" to="calibration_image" />
     <param name="marker_size" type="int" value="$(arg marker_size)" />
     <param name="scaling" type="double" value="$(arg scaling)" />
   </node>
