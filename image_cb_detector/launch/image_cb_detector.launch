@@ -2,6 +2,7 @@
   <arg name="image"/>
   <arg name="viewer" default="True" />
   <arg name="marker_size" default="5"/>
+  <arg name="marker_width" default="2"/>
   <arg name="scaling" default="0.5" />
   <arg name="autostart" default="False" />
   <arg name="num_rows" default="6" />
@@ -25,6 +26,7 @@
         output="screen">
     <remap from="image" to="calibration_image" />
     <param name="marker_size" type="int" value="$(arg marker_size)" />
+    <param name="marker_width" type="int" value="$(arg marker_width)" />
     <param name="scaling" type="double" value="$(arg scaling)" />
   </node>
 
