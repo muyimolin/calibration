@@ -3,8 +3,8 @@
   <arg name="viewer" default="True" />
   <arg name="marker_size" default="5"/>
   <arg name="marker_width" default="2"/>
-  <arg name="scaling" default="0.5" />
-  <arg name="autostart" default="False" />
+  <arg name="scaling" default="1" />
+  <arg name="autostart" default="True" />
   <arg name="num_rows" default="6" />
   <arg name="num_cols" default="8" />
   <arg name="dim" default="1" />

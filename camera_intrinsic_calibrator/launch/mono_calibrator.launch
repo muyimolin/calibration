@@ -1,22 +1,32 @@
 <launch>
   <arg name="image" />
-  <arg name="camera" default="driver" />
+  <arg name="camera_ns" />
+  <arg name="camera" default="$(arg camera_ns)/driver" />
+  <arg name="features" default="$(arg camera_ns)/features" />
+  <arg name="camera_info" default="$(arg camera_ns)/camera_info" />
+
+  <arg name="use_service" default="True" />
+  <arg name="camera_name" default="camera" />
+  <arg name="file_name" default="camera.yaml" />
+
   <arg name="autostart" default="True" />
+  <arg name="viewer" default="True" />
+  <arg name="marker_size" default="5"/>
+  <arg name="marker_width" default="2"/>
+  <arg name="scaling" default="1" />
   <arg name="num_cols" default="8" />
   <arg name="num_rows" default="6" />
   <arg name="dim" default="1" />
   <arg name="pattern" default="0" />
   <arg name="flags" default="0" />
-  <arg name="use_service" default="True" />
-  <arg name="features" default="features" />
-  <arg name="camera_info" default="camera_info" />
-  <arg name="camera_name" default="camera" />
-  <arg name="file_name" default="camera.yaml" />
 
 
-  <include file="$(find image_cb_detector)/launch/image_cb_detector.launch">
+  <include file="$(find image_cb_detector)/launch/image_cb_detector.launch" ns="$(arg camera_ns)">
     <arg name="image" value="$(arg image)" />
-    <arg name="scaling" value="0.25" />
+    <arg name="viewer" value="$(arg viewer)" />
+    <arg name="marker_size" value="$(arg marker_size)"/>
+    <arg name="marker_width" value="$(arg marker_width)"/>
+    <arg name="scaling" default="$(arg scaling)" />
     <arg name="autostart" value="$(arg autostart)" />
     <arg name="num_rows" value="$(arg num_rows)" />
     <arg name="num_cols" value="$(arg num_cols)" />
