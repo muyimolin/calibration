@@ -2,8 +2,9 @@
 
 Provide a node that extracts calibration plate locations from ROS images.
 
-*   Maintainer: [Allison Thackston](http://bender.jsc.nasa.gov/confluence/display/~athackst)
-*   Author: [Allison Thackston](http://bender.jsc.nasa.gov/confluence/display/~athackst)
+*   Maintainer: [Vincent Rabaud](https://github.com/vrabaud)
+*   Author: [Vincent Rabaud](https://github.com/vrabaud)
+*   Author: [Allison Thackston](https://github.com/athackst)
 
 # Topics
 
