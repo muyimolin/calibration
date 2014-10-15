@@ -9,10 +9,14 @@
 
 
   <!-- Cameras -->
-  <include file="$(find calibration_launch)/launch/monocam_pipeline.launch" ns="/camera" >
-    <arg name="scaling" value="0.25" />
-    <arg name="image_topic" value="image_rect" />
-  </include>
+  <group ns="/camera">
+    <node pkg="image_proc" type="image_proc" name="image_proc" />
+    <node pkg="topic_tools" type="mux" name="mux_config" args="image image_raw image_rect" />
+    <include file="$(find calibration_launch)/capture_data/monocam_pipeline.launch">
+      <arg name="scaling" value="0.25" />
+      <arg name="image_topic" value="image" />
+    </include>
+  </group>
 
   <!-- Intersections -->
   <node type="interval_intersection_action"

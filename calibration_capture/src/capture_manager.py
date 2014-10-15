@@ -48,7 +48,6 @@ from capture_executive.robot_measurement_cache import RobotMeasurementCache
 
 class CaptureManagerServer:
     def __init__(self, config_dir, system, robot_desc):
-        self.lock = threading.Lock()
         
         # Load Configs
         self.cam_config        = yaml.load(open(config_dir + "/cam_config.yaml"))
@@ -166,11 +165,9 @@ class CaptureManagerServer:
         rospy.logdebug("[%s] Set up pipelines" % rospy.get_name())
         
         # Set up cache
-        #self.lock.acquire()
         self.cache.clear()
         self.cache.reconfigure(cam_ids, chain_ids, laser_ids)
         rospy.logdebug("[%s] Configurating cache" % rospy.get_name())
-        #self.lock.release()
 
         # Set up the sensor managers
         enable_list = []
@@ -233,15 +230,13 @@ class CaptureManagerServer:
         rospy.loginfo("[%s] Disabled laser managers" % rospy.get_name())      
         
     def request_callback(self, msg):
+        rospy.logdebug("[%s] in request_callback" % rospy.get_name())
         # See if the interval is big enough to care
         # TODO: make this a property
-        rospy.logdebug("[%s] in request_callback" % rospy.get_name())
         if (msg.end - msg.start) < rospy.Duration(1,0):
             return
-        
         if(self._server.is_active() and self.goal_sample_id):
             rospy.logdebug("[%s] server active" % rospy.get_name())
-            #self.lock.acquire()
             m = self.cache.request_robot_measurement(msg.start, msg.end)
             if isinstance(m, basestring):
                 self.message = m
@@ -259,39 +254,28 @@ class CaptureManagerServer:
                 self.goal_sample_id = None
                 self.goal_target_id = None
                 self.goal_chain_id  = None
-            #self.lock.release()
                 
         
     def status_callback(self, msg):
         if(self._server.is_active() and self.goal_sample_id):
-            #self.lock.acquire()
             self.interval_status=msg
-            #self.lock.release()
             
     def add_cam_measurement(self, cam_id, msg):
         if (self._server.is_active() and self.goal_sample_id):
-            #self.lock.acquire()
             self.cache.add_cam_measurement(cam_id, msg)
-            #self.lock.release()
             
     def add_chain_measurement(self, chain_id, msg):
         if(self._server.is_active() and self.goal_sample_id):
             rospy.logdebug("[%s] Adding chain measurement" % rospy.get_name())
-            #self.lock.acquire()
             self.cache.add_chain_measurement(chain_id, msg)
-            #self.lock.release()
             rospy.logdebug("[%s] Finished adding chain measurement" % rospy.get_name())
         
     def add_laser_measurement(self, laser_id, msg, interval_start, interval_end):
         if(self._server.is_active() and self.goal_sample_id):
-            #self.lock.acquire
             self.cache.add_laser_measurement(laser_id, msg, interval_start, interval_end)
-            #self.lock.release()
             
 if __name__=='__main__':
-    rospy.init_node("capture_manager")
-    rospy.loginfo("[%s] Starting..." % rospy.get_name())
-    
+
     config_dir        = rospy.get_param("~config_dir", None)
     system            = rospy.get_param("~system", None)
     robot_description = rospy.get_param('robot_description', None)
@@ -301,8 +285,14 @@ if __name__=='__main__':
     parser.add_option("-c", "--config", dest= "config_dir", type="string", default=config_dir, help="Directory containing configuration files")
     parser.add_option("-s", "--system", dest= "system", type="string", default=system, help="System file")
     parser.add_option("-r", "--robot_desc", dest = "robot_description", type="string", default=robot_description, help="The urdf of the robot")
+    parser.add_option("-d", "--debug", action="store_false", dest="debug", default=False, help="Set log level to debug")
     
     options, args = parser.parse_args()
+    if options.debug:
+        rospy.init_node("capture_manager", log_level=rospy.DEBUG)
+    else:
+        rospy.init_node("capture_manager")
+    rospy.loginfo("[%s] Starting..." % rospy.get_name())
     
     config_dir        = options.config_dir
     system            = options.system
@@ -320,9 +310,8 @@ if __name__=='__main__':
         rospy.logfatal("Robot description not set")
         sys.exit(-1)
     
-    rospy.loginfo("[%s] Settings: " % rospy.get_name() +
-              "\n config_dir  = " + str(config_dir) +
-              "\n system  = " + str(system) )
+    rospy.loginfo("[%s] [config_dir] %s" % (rospy.get_name(), str(config_dir)))
+    rospy.loginfo("[%s] [system] %s" % (rospy.get_name(), str(system)))
             
     CaptureManagerServer(config_dir, system, robot_description)
     

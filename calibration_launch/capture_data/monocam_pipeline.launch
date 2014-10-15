@@ -1,20 +1,15 @@
 <launch>
 
   <arg name="image_topic" default="image_rect"/>
-  <arg name="frequency" default="2"/>
   <arg name="marker_size" default="3"/>
   <arg name="scaling" default="0.5" />
 
-  <node type="throttle"
-        pkg="topic_tools"
-        name="throttle"
-        args="messages $(arg image_topic) $(arg frequency) $(arg image_topic)_throttle" />
-
   <include file="$(find image_cb_detector)/launch/image_cb_detector.launch">
-    <arg name="image" value="$(arg image_topic)_throttle" />
-    <arg name="image_view" value="$(arg image_topic)_throttle" />
+    <arg name="image" value="$(arg image_topic)" />
     <arg name="marker_size" value="$(arg marker_size)" />
     <arg name="scaling" value="$(arg scaling)" />
+    <arg name="viewer" value="False" />
+    <arg name="autostart" value="False" />
   </include>
 
   <node type="monocam_settler_action"

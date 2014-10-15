@@ -46,6 +46,7 @@ import interval_intersection.msg
 import time
 from trajectory_msgs.msg import JointTrajectory
 from trajectory_msgs.msg import JointTrajectoryPoint
+from topic_tools.srv import MuxSelect
 
 # Puts the system in a specific configuration, in preparation for collecting a sample
 class ConfigManager:
@@ -172,6 +173,10 @@ class CameraConfigManager:
         # Initialize the ActionClients and state
         self._settler_ac   = actionlib.SimpleActionClient(self._configs["settler_config"], monocam_settler.msg.ConfigAction)
         self._cb_detector_ac  = actionlib.SimpleActionClient(self._configs["cb_detector_config"], image_cb_detector.msg.ConfigAction)
+        self._mux_srv = None
+        if("mux_config" in self._configs):
+            rospy.wait_for_service(self._configs["mux_config"])
+            self._mux_srv = rospy.ServiceProxy(self._configs["mux_config"], MuxSelect)
         self._state = "idle"
 
     # Check to make sure that config dict has all the necessary fields. TODO: Currently a stub
@@ -226,7 +231,14 @@ class CameraConfigManager:
             
             rospy.logdebug("[CameraConfigManager] [%s] cb goal:\n%s" % (self._cam_id, str(goal)))
             self._cb_detector_ac.send_goal(goal)
-
+            
+            if "mux" in next_config and self._mux_srv:
+                mux_config = next_config["mux"]
+                try:
+                    self._mux_srv(mux_config["topic"])
+                except rospy.ServiceException, e:
+                    rospy.logerr("Could not select topic: %s" % e)
+                
             # Send the LED Detector Goal
             if "led_detector" in cb_detector_config:
                 print "found led_detector"

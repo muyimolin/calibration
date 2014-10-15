@@ -51,6 +51,7 @@ class RobotMeasurementCache:
         self._cam_sizes   = dict()
         self._laser_sizes = dict()
         self._chain_sizes = dict()
+        self.clear()
         pass
 
     # Specify what sensor data we're expecting to receive

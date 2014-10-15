@@ -1,5 +1,5 @@
 camera_measurements:
-- {cam_id: camera, config: cb_8x6}
+- {cam_id: camera, config: intrinsic_cb_8x6}
 joint_commands:
 - controller: head_controller
   segments:
@@ -9,10 +9,6 @@ joint_commands:
   segments:
   - duration: 2.0
     positions: [1.7491875901719594]
-#joint_measurements:
-#- {chain_id: head_chain, config: tight_tol}
-#laser_measurements:
-#- {config: cb_8x6, laser_id: tilt_laser}
 sample_id: intrinsic_0000
-target: {chain_id: floating, target_id: cb_8x6}
+target: {chain_id: floating, target_id: intrinsic_cb_8x6}
 repeat: true

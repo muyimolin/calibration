@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="image_topic" default="image_rect_annotated"/>
+  <arg name="image_topic" default="annotated"/>
   <arg name="autosize" default="True"/>
 
   <node type="image_view"
