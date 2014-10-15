@@ -3,7 +3,6 @@
 Provide a node that extracts calibration plate locations from ROS images.
 
 *   Maintainer: [Vincent Rabaud](https://github.com/vrabaud)
-*   Author: [Vincent Rabaud](https://github.com/vrabaud)
 *   Author: [Allison Thackston](https://github.com/athackst)
 
 # Topics
