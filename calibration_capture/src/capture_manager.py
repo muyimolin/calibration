@@ -135,6 +135,8 @@ class CaptureManagerServer:
         # Subscribe to topic containing stable intervals
         self.request_interval_sub = rospy.Subscriber("intersected_interval", calibration_msgs.msg.Interval, self.request_callback)
 
+        self.interval_status = CaptureManagerFeedback()
+        
         self.interval_status_sub = rospy.Subscriber(
               "intersected_interval_status",
               calibration_msgs.msg.IntervalStatus, self.status_callback)
@@ -233,13 +235,15 @@ class CaptureManagerServer:
         rospy.logdebug("[%s] in request_callback" % rospy.get_name())
         # See if the interval is big enough to care
         # TODO: make this a property
-        if (msg.end - msg.start) < rospy.Duration(1,0):
-            return
         if(self._server.is_active() and self.goal_sample_id):
             rospy.logdebug("[%s] server active" % rospy.get_name())
+            if (msg.end - msg.start) < rospy.Duration(1,0):
+                self.interval_status.progress = "interval not big enough"
+                self._server.publish_feedback(self.interval_status)
+                return
             m = self.cache.request_robot_measurement(msg.start, msg.end)
             if isinstance(m, basestring):
-                self.message = m
+                self.interval_status.progress = m
             else:
                 m.sample_id = self.goal_sample_id
                 m.target_id = self.goal_target_id
@@ -254,11 +258,14 @@ class CaptureManagerServer:
                 self.goal_sample_id = None
                 self.goal_target_id = None
                 self.goal_chain_id  = None
+                self.interval_status.progress = "succeeded"
+            self._server.publish_feedback(self.interval_status)
                 
         
     def status_callback(self, msg):
         if(self._server.is_active() and self.goal_sample_id):
-            self.interval_status=msg
+            self.interval_status.status = msg
+            self._server.publish_feedback(self.interval_status)
             
     def add_cam_measurement(self, cam_id, msg):
         if (self._server.is_active() and self.goal_sample_id):
@@ -266,9 +273,7 @@ class CaptureManagerServer:
             
     def add_chain_measurement(self, chain_id, msg):
         if(self._server.is_active() and self.goal_sample_id):
-            rospy.logdebug("[%s] Adding chain measurement" % rospy.get_name())
             self.cache.add_chain_measurement(chain_id, msg)
-            rospy.logdebug("[%s] Finished adding chain measurement" % rospy.get_name())
         
     def add_laser_measurement(self, laser_id, msg, interval_start, interval_end):
         if(self._server.is_active() and self.goal_sample_id):
