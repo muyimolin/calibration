@@ -191,6 +191,9 @@ class CameraConfigManager:
         else:
             rospy.logdebug("[CameraConfigManager] [%s]: Need to transition [%s] -> [%s]" % (self._cam_id, self._state, next_config_name))
 
+            if not (next_config_name in self._configs["configs"]):
+                rospy.logerr("CameraConfig %s not defined!" % next_config_name)
+                return
             next_config   = self._configs["configs"][next_config_name]
 
             # Send the Settler's Goal

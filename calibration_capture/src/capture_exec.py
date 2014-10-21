@@ -201,8 +201,19 @@ if __name__=='__main__':
                                 keep_collecting = sample_options[step]["repeat"]
                     elif client.get_state() == GoalStatus.PENDING:
                         rospy.loginfo("pending....")
-                        #do nothing
-                        #pass
+                        if rospy.get_rostime() > max_time:
+                            client.cancel_goal()
+                            active = False
+                            print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                            print " Timeout Capturing a %s Sample, press <enter to continue> " % sample_options[step]["group"]
+                            print " ---------------------------------------------------------"
+                            while not rospy.is_shutdown():
+                                if len(resp) > 0:
+                                    break
+                                r.sleep()
+                            if not sample_options[step]["repeat"]:
+                                sample_failure[step] += 1
+                                keep_collecting = sample_options[step]["repeat"]
                     else:
                         #we have failed some how
                             print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
