@@ -70,17 +70,24 @@ using namespace image_cb_detector;
 
 ImageAnnotator::ImageAnnotator()
 {
-  image_pub_ = n_.advertise<sensor_msgs::Image>("annotated", 1);
+    image_pub_ = n_.advertise<sensor_msgs::Image>("annotated", 1);
 
-  ros::NodeHandle local_ns_("~");
+    ros::NodeHandle local_ns_("~");
 
-  local_ns_.param("marker_size", marker_size_, 1);
-  local_ns_.param("marker_width", marker_width_, 1);
-  local_ns_.param("scaling", scaling_, 1.0);
+    local_ns_.param("marker_size", marker_size_, -1);
+    local_ns_.param("marker_width", marker_width_, -1);
+    local_ns_.param("scaling", scaling_, -1.0);
 
-  ROS_INFO("[%s][marker_size]: %i", ros::this_node::getName().c_str(), marker_size_);
-  ROS_INFO("[%s][marker_width]: %i", ros::this_node::getName().c_str(), marker_width_);
-  ROS_INFO("[%s][scaling]: %.3f", ros::this_node::getName().c_str(), scaling_);
+    ROS_INFO("[%s][marker_size]: %i", ros::this_node::getName().c_str(), marker_size_);
+    ROS_INFO("[%s][marker_width]: %i", ros::this_node::getName().c_str(), marker_width_);
+    if (scaling_ < 0)
+    {
+        ROS_INFO("[%s][auto-scale]: ON", ros::this_node::getName().c_str());
+    }
+    else
+    {
+        ROS_INFO("[%s][scaling]: %.3f", ros::this_node::getName().c_str(), scaling_);
+    }
 }
 
 void ImageAnnotator::processPair(const sensor_msgs::ImageConstPtr& image, const calibration_msgs::CalibrationPatternConstPtr& features)
@@ -89,9 +96,21 @@ void ImageAnnotator::processPair(const sensor_msgs::ImageConstPtr& image, const 
 
     cv_bridge::CvImageConstPtr cv_image = cv_bridge::toCvShare(image, "rgb8");
 
+    if(scaling_ < 0)
+    {
+        scaling_ = (double) (640. / cv_image->image.cols);
+    }
     // ***** Resize the image based on scaling parameters in config *****
     const int scaled_width  = (int) (.5 + cv_image->image.cols  * scaling_);
     const int scaled_height = (int) (.5 + cv_image->image.rows * scaling_);
+    if(marker_size_ < 0)
+    {
+        marker_size_ = (int)(0.5 + scaled_width/100);
+    }
+    if(marker_width_ < 0)
+    {
+        marker_width_ = (int) (0.5 + scaled_width/250);
+    }
     cv::Mat cv_image_scaled;
     cv::resize(cv_image->image, cv_image_scaled,
           cv::Size(scaled_width, scaled_height), 0, 0, CV_INTER_LINEAR);
