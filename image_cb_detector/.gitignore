@@ -5,3 +5,10 @@ msg/ConfigActionResult.msg
 msg/ConfigFeedback.msg
 msg/ConfigGoal.msg
 msg/ConfigResult.msg
+msg/SelectAction.msg
+msg/SelectActionFeedback.msg
+msg/SelectActionGoal.msg
+msg/SelectActionResult.msg
+msg/SelectFeedback.msg
+msg/SelectGoal.msg
+msg/SelectResult.msg

@@ -17,9 +17,11 @@
   <depend package="sensor_msgs"/>
   <depend package="cv_bridge"/>
   <depend package="message_filters"/>
+  <depend package="pluginlib"/>
 
   <export>
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -limage_cb_detector"/>
+    <image_cb_detector plugin="${prefix}/calibration_targets.xml" />
   </export> 
 
 </package>

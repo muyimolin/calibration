@@ -27,10 +27,15 @@ rosbuild_genmsg()
 find_package(OpenCV REQUIRED)
 
 rosbuild_add_boost_directories()
-rosbuild_add_library(image_cb_detector src/image_cb_detector.cpp)
-target_link_libraries(image_cb_detector ${OpenCV_LIBRARIES}) 
 
 rosbuild_add_executable(image_annotator src/image_annotator.cpp)
 target_link_libraries(image_annotator ${OpenCV_LIBRARIES})
 rosbuild_link_boost(image_annotator signals)
 
+rosbuild_add_library(checkerboard_target include/image_cb_detector/checkerboard_target.h
+                                         src/checkerboard_target.cpp)
+target_link_libraries(checkerboard_target ${OpenCV_LIBRARIES})
+
+rosbuild_add_executable(calibration_detector include/image_cb_detector/calibration_detector_server.h
+                                             src/calibration_detector_server.cpp)
+rosbuild_link_boost(calibration_detector thread)

@@ -1,0 +1,5 @@
+<library path="lib/libcheckerboard_target">
+  <class name="image_cb_detector/checkerboard_target" type="calibration_target::Checkerboard" base_class_type="calibration_target_base::CalibrationTarget">
+    <description>This is a checkerboard target plugin.</description>
+  </class>
+</library>
