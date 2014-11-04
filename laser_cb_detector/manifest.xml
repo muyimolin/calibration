@@ -12,17 +12,11 @@
   <depend package="roscpp"/>
   <depend package="message_filters" />
   <depend package="std_msgs"/>
-
-  <!-- common_msgs -->
   <depend package="actionlib_msgs" />
-
-  <!-- calibration -->
   <depend package="calibration_msgs"/>
-  <depend package="image_cb_detector"/>
-
-  <!-- opencv -->
   <depend package="opencv2" />
   <depend package="cv_bridge" />
 </package>
+
 
 
