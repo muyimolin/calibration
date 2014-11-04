@@ -26,6 +26,6 @@ rosbuild_gensrv()
 #target_link_libraries(${PROJECT_NAME} another_library)
 #rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
-#rosbuild_add_executable(dynamic_transform_publisher src/calibration_publisher_node.cpp
-#                       )
-#target_link_libraries(example ${PROJECT_NAME})
+rosbuild_add_executable(dynamic_transform_publisher src/publisher_node.cpp
+                       )
+target_link_libraries(${PROJECT_NAME} yaml-cpp)
