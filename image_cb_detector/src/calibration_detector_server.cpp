@@ -55,8 +55,8 @@ void CalibrationDetectorServer::goalCallback()
     image_cb_detector::SelectGoalConstPtr currGoal =  action.acceptNewGoal();
     try
     {
-        target = target_loader.createInstance(currGoal->calibration_target_type);
-        target->initialize(currGoal->calibration_target_name);
+        target = target_loader.createInstance(currGoal->target_type);
+        target->initialize(currGoal->target_name);
     }
     catch(pluginlib::PluginlibException& e)
     {
@@ -85,50 +85,18 @@ void CalibrationDetectorServer::imageCallback(const sensor_msgs::ImageConstPtr &
 /**************************************************************************
 ** main portion
 **************************************************************************/
-#include <signal.h>
-#include <ros/xmlrpc_manager.h>
-
-// Signal-safe flag for whether shutdown is requested
-sig_atomic_t volatile g_request_shutdown = 0;
-
-// Replacement SIGINT handler
-void mySigIntHandler(int sig)
-{
-  g_request_shutdown = 1;
-}
-
-// Replacement "shutdown" XMLRPC callback
-void shutdownCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
-{
-  int num_params = 0;
-  if (params.getType() == XmlRpc::XmlRpcValue::TypeArray)
-    num_params = params.size();
-  if (num_params > 1)
-  {
-    std::string reason = params[1];
-    ROS_WARN("Shutdown request received. Reason: [%s]", reason.c_str());
-    g_request_shutdown = 1; // Set flag
-  }
-
-  result = ros::xmlrpc::responseInt(1, "", 0);
-}
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "calibration_detector_action", ros::init_options::NoSigintHandler);
-    signal(SIGINT, mySigIntHandler);
 
-    // Override XMLRPC shutdown
-    ros::XMLRPCManager::instance()->unbind("shutdown");
-    ros::XMLRPCManager::instance()->bind("shutdown", shutdownCallback);
-
+    ros::init(argc, argv, "calibration_detector_action");
     ros::NodeHandle pnh("~");
 
     bool autostart;
     pnh.param<bool>("autostart", autostart, false);
 
     std::string target_type;
-    pnh.param<std::string>("target_type", target_type, "image_cb_detector/checkerboard_target");
+    pnh.param<std::string>("target_type", target_type, "image_cb_detector/chessboard_target");
 
     std::string target_name;
     pnh.param<std::string>("target_name", target_name, ros::this_node::getName());
@@ -141,18 +109,16 @@ int main(int argc, char **argv)
             ROS_INFO("[%s] Autostarting %s %s", ros::this_node::getName().c_str(), target_type.c_str(), target_name.c_str());
             ros::Publisher goalPub = pnh.advertise<image_cb_detector::SelectActionGoal>("goal", 1, true);
             image_cb_detector::SelectActionGoal goalMsg;
-            goalMsg.goal.calibration_target_type = target_type;
-            goalMsg.goal.calibration_target_name = target_name;
+            goalMsg.goal.target_type = target_type;
+            goalMsg.goal.target_name = target_name;
             goalMsg.header.stamp = ros::Time::now();
             goalMsg.header.frame_id = "autostart";
             goalMsg.goal_id.stamp = ros::Time::now();
             goalMsg.goal_id.id = "autostart";
             goalPub.publish(goalMsg);
         }
-        while (!g_request_shutdown)
-        {
-            ros::spinOnce();
-        }
+
+        ros::spin();
     }
     catch (std::exception& e)
     {

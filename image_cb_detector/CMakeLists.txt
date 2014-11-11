@@ -16,6 +16,11 @@ genaction()
 
 rosbuild_init()
 
+#generate dynamic reconfigure
+rosbuild_find_ros_package(dynamic_reconfigure)
+include(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
+gencfg()
+
 #set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
@@ -32,9 +37,13 @@ rosbuild_add_executable(image_annotator src/image_annotator.cpp)
 target_link_libraries(image_annotator ${OpenCV_LIBRARIES})
 rosbuild_link_boost(image_annotator signals)
 
-rosbuild_add_library(checkerboard_target include/image_cb_detector/checkerboard_target.h
-                                         src/checkerboard_target.cpp)
-target_link_libraries(checkerboard_target ${OpenCV_LIBRARIES})
+rosbuild_add_library(calibration_targets include/image_cb_detector/image_converter.h
+                                         #src/image_converter.cpp
+                                         include/image_cb_detector/chessboard_target.h
+                                         src/chessboard_target.cpp
+                                         include/image_cb_detector/circles_target.h
+                                         src/circles_target.cpp)
+target_link_libraries(calibration_targets ${OpenCV_LIBRARIES})
 
 rosbuild_add_executable(calibration_detector include/image_cb_detector/calibration_detector_server.h
                                              src/calibration_detector_server.cpp)

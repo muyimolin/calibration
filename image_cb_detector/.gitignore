@@ -12,3 +12,7 @@ msg/SelectActionResult.msg
 msg/SelectFeedback.msg
 msg/SelectGoal.msg
 msg/SelectResult.msg
+cfg/cpp
+src/image_cb_detector/cfg
+*.cfgc
+docs/

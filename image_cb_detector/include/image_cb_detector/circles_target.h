@@ -3,7 +3,7 @@
 ** National Aeronotics and Space Administration.  All Rights Reserved
 **
 ** Author: Allison Thackston
-** Created: 24 Oct 2014
+** Created: 10 Nov 2014
 **
 ** Developed jointly by NASA/JSC and Oceaneering Space Systems
 **
@@ -20,8 +20,8 @@
 ** limitations under the License.
 **************************************************************************/
 
-#ifndef CHECKERBOARD_TARGET_H_
-#define CHECKERBOARD_TARGET_H_
+#ifndef CIRCLES_TARGET_H
+#define CIRCLES_TARGET_H
 
 #include <ros/ros.h>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -29,37 +29,42 @@
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/core/core.hpp>
 #include <image_cb_detector/calibration_target_base.h>
+#include <image_cb_detector/image_converter.h>
+#include <dynamic_reconfigure/server.h>
+#include <image_cb_detector/CirclesConfig.h>
 
 namespace calibration_target
 {
-class Checkerboard : public calibration_target_base::CalibrationTarget
+class Circles : public calibration_target_base::CalibrationTarget
 {
 public:
-    Checkerboard() {}
+    Circles() {}
 
     void initialize(std::string name);
     void detect(const sensor_msgs::ImageConstPtr & image);
     calibration_msgs::CalibrationPattern getFeatures();
     sensor_msgs::Image getImage();
-
 protected:
-    //! Convert image message into a 8-bit 1 channel monochrome OpenCV image
-    bool convertImage(const sensor_msgs::ImageConstPtr & image);
-    double calcDistance(cv::Point2f a, cv::Point2f b);
+    void reconfigureCallback(image_cb_detector::CirclesConfig &config, uint32_t level);
 
 private:
     ros::NodeHandle nh;
-    int numX, numY;
-    double dimX, dimY;
     int flags;
     cv::Size boardSize;
+    cv::Ptr<cv::FeatureDetector> blobDetector;
+    cv::SimpleBlobDetector::Params params;
     bool success;
-    std::vector<cv::Point2f> corners;
+    std::vector<cv::Point2f> centers;
     cv_bridge::CvImageConstPtr mono8;
     std_msgs::Header header;
     calibration_msgs::CalibrationPattern features;
 
+    // Dynamic reconfigure
+    typedef dynamic_reconfigure::Server<image_cb_detector::CirclesConfig> ReconfigureServer;
+    boost::shared_ptr<ReconfigureServer> reconfigureServer;
+    boost::recursive_mutex config_mutex;
+    bool configured;
+
 };
 }
-
-#endif // CHECKERBOARD_TARGET_H_
+#endif // CIRCLES_TARGET_H
