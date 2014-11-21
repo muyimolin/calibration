@@ -10,16 +10,9 @@
   <url>http://ros.org/wiki/extrinsic_calibrator</url>
   <depend package="roscpp"/>
   <depend package="rospy"/>
-  <depend package="calibration_capture"/>
-  <depend package="calibration_msgs"/>
-  <depend package="sensor_msgs"/>
-  <depend package="geometry_msgs"/>
-  <depend package="message_filters"/>
-  <depend package="cv_bridge"/>
   <depend package="interactive_markers"/>
   <depend package="visualization_msgs"/>
   <depend package="dynamic_transform_publisher"/>
-
 </package>
 
 
