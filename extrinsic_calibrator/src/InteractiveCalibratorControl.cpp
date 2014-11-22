@@ -49,7 +49,7 @@ public:
         updateSrv.request.child_frame = child_frame;
         updateSrv.request.parent_frame = parent_frame;
 
-        saver = nh.serviceClient<dynamic_transform_publisher::Update>(nh.resolveName("dynamic_tf_publisher")+"/save");
+        saver = nh.serviceClient<dynamic_transform_publisher::Save>(nh.resolveName("dynamic_tf_publisher")+"/save");
         ROS_INFO("saver: %s/save", nh.resolveName("dynamic_tf_publisher").c_str());
         if(!saver.exists())
         {
