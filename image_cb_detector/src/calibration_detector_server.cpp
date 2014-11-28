@@ -28,12 +28,12 @@ CalibrationDetectorServer::CalibrationDetectorServer(std::string name)
     ,action(name, false)
 {
     featurePub = nh.advertise<calibration_msgs::CalibrationPattern>("features", 1);
-    ROS_INFO("[%s] Publishing to: %s", ros::this_node::getName().c_str(), ros::names::remap("features").c_str());
+    ROS_INFO("[%s] Publishing to: %s", ros::this_node::getName().c_str(), ros::names::resolve("features").c_str());
     imagePub   = nh.advertise<sensor_msgs::Image>("calibration_image", 1);
-    ROS_INFO("[%s] Publishing to: %s", ros::this_node::getName().c_str(), ros::names::remap("calibration_image").c_str());
+    ROS_INFO("[%s] Publishing to: %s", ros::this_node::getName().c_str(), ros::names::resolve("calibration_image").c_str());
 
     imageSub = nh.subscribe("image_raw", 1, &CalibrationDetectorServer::imageCallback, this);
-    ROS_INFO("[%s] Subscribing to: %s", ros::this_node::getName().c_str(), ros::names::remap("image_raw").c_str());
+    ROS_INFO("[%s] Subscribing to: %s", ros::this_node::getName().c_str(), ros::names::resolve("image_raw").c_str());
 
     action.registerGoalCallback( boost::bind(&CalibrationDetectorServer::goalCallback, this) );
     action.registerPreemptCallback( boost::bind(&CalibrationDetectorServer::preemptCallback, this) );

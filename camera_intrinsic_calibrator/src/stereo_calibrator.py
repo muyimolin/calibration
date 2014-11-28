@@ -1,38 +1,26 @@
 #!/usr/bin/env python
 #
-# Software License Agreement (BSD License)
-#
-# Copyright (c) 2014, Oceaneering Space Systems / NASA
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-#
-#  * Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-#  * Redistributions in binary form must reproduce the above
-#    copyright notice, this list of conditions and the following
-#    disclaimer in the documentation and/or other materials provided
-#    with the distribution.
-#  * Neither the name of the Willow Garage nor the names of its
-#    contributors may be used to endorse or promote products derived
-#    from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# Copyright (c) 2014 United States Government as represented by the
+# National Aeronotics and Space Administration.  All Rights Reserved
 #
 # Author: Allison Thackston
+# Created: 24 Oct 2014
+#
+# Developed jointly by NASA/JSC and Oceaneering Space Systems
+#
+# Licensed under the NASA Open Source Agreement v1.3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://opensource.org/licenses/NASA-1.3
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+###########################################################################
+
 import rospy
 import roslib
 roslib.load_manifest("camera_intrinsic_calibrator")
@@ -126,8 +114,9 @@ class StereoCalibratorServer:
         
         if(lmsg.binning_x > 1 or lmsg.binning_y > 1 or
            rmsg.binning_x > 1 or rmsg.binning_y > 1):
-            rospy.logerror("Attempting to calibrate a binned image!")
+            rospy.logerr("Attempting to calibrate a binned image!")
             self._camera_info = None
+            rospy.signal_shutdown('Error')
             return
         # Check that sizes match
         if not self._server:
@@ -154,7 +143,26 @@ class StereoCalibratorServer:
         if(not self._camerainfo):
             self._server.set_aborted(None, "Haven't received valid camera info message yet!")
             return
-        self._calibrator = StereoCalibrator(self._camerainfo)
+        flags = 0
+        if(goal.fix_principal_point):
+            flags |= flags + cv2.CALIB_FIX_PRINCIPAL_POINT
+            rospy.loginfo("[%s] fix principle point" % self._action_name)
+        if(goal.fix_aspect_ratio):
+            flags |= flags + cv2.CALIB_FIX_ASPECT_RATIO
+            rospy.loginfo("[%s] fix aspect ratio" % self._action_name)
+        if(goal.zero_tangent_dist):
+            flags |= flags + cv2.CALIB_ZERO_TANGENT_DIST
+            rospy.loginfo("[%s] zero tangent dist" % self._action_name)
+
+        param_ranges = None
+        if(len(goal.param_ranges)==4):
+            param_ranges = goal.param_ranges
+            rospy.loginfo("[%s] params: [%f, %f, %f %f]" % (self._action_name, param_ranges[0], param_ranges[1], param_ranges[2], param_ranges[3]))
+
+        alpha = goal.alpha
+        rospy.loginfo("[%s] alpha: %f " % (self._action_name, alpha))
+
+        self._calibrator = StereoCalibrator(self._camerainfo, flags, param_ranges, alpha)
             
         if self._server.is_preempt_requested():
             self._calibrator = None
@@ -207,7 +215,7 @@ class StereoCalibratorServer:
     
 if __name__=='__main__':
     rospy.init_node("stereo_calibrator")
-    rospy.loginfo("Starting %s" % rospy.get_name())
+    rospy.loginfo("Loading %s" % rospy.get_name())
     
     # Get parameters
     left_params = CalibratorParams()
@@ -228,44 +236,23 @@ if __name__=='__main__':
     right_params.camera_name  = rospy.get_param("~right_camera_name", "right")
     right_params.file_name    = rospy.get_param("~right_file_name", "right.yaml")
     
-    # If command line options exist, override parameters
-    from optparse import OptionParser
-    parser = OptionParser("%prog", description=None)
-    parser.add_option("-a", "--autostart", dest="autostart", type="string", default=autostart,help="Autostart image_calibration_detector")
-    parser.add_option("-s", "--use_service", dest="use_service", type="string", default=str(use_service), help="Use service to set parameters")
-    parser.add_option("-x", "--approximate", dest="approximate", type="float", default=approximate, help="Approximate sync time for cameras (0 for synced)")
-    parser.add_option("-l", "--left_camera_name", dest= "left_camera_name", type="string", default=left_params.camera_name, help="Name of the left camera to use in the calibration file if not using service")
-    parser.add_option("-L", "--left_file_name", dest= "left_file_name", type="string", default=left_params.file_name, help="Name and location to save the left calibration file if not using service")
-    parser.add_option("-r", "--right_camera_name", dest= "right_camera_name", type="string", default=right_params.camera_name, help="Name of the right camera to use in the calibration file if not using service")
-    parser.add_option("-R", "--right_file_name", dest= "right_file_name", type="string", default=right_params.file_name, help="Name and location to save the right calibration file if not using service")
-    
-    options, args = parser.parse_args()
-    
-    autostart = options.autostart.lower()=='true'
-    use_service = options.use_service.lower()=='true'
-    approximate = options.approximate
-    left_params.camera_name = options.left_camera_name
-    left_params.file_name = options.left_file_name
-    right_params.camera_name = options.right_camera_name
-    right_params.file_name = options.right_file_name
-    
     # Show user the parameters used
-    rospy.loginfo("Settings for " + rospy.get_name() + ": " +
-                  "\n autostart           = " + str(autostart) +
-                  "\n use_service         = " + str(use_service) +
-                  "\n approximate         = " + str(approximate) +
-                  "\n **LEFT CAMERA** " +
-                  "\n features topic      = " + rospy.resolve_name(left_params.features) +
-                  "\n camera_info topic   = " + rospy.resolve_name(left_params.camera_info) +
-                  "\n set_camera_info srv = " + rospy.resolve_name(left_params.service_name) +
-                  "\n save camera name    = " + left_params.camera_name +
-                  "\n save file name      = " + left_params.file_name +
-                  "\n **RIGHT CAMERA** " +
-                  "\n features topic      = " + rospy.resolve_name(right_params.features) +
-                  "\n camera_info topic   = " + rospy.resolve_name(right_params.camera_info) +
-                  "\n set_camera_info srv = " + rospy.resolve_name(right_params.service_name) +
-                  "\n save camera name    = " + right_params.camera_name +
-                  "\n save file name      = " + right_params.file_name )
+    rospy.loginfo("[" + rospy.get_name() + "] ~autostart:=" + str(autostart))
+    rospy.loginfo("[" + rospy.get_name() + "] ~use_service:=" + str(use_service))
+    rospy.loginfo("[" + rospy.get_name() + "] ~approximate:=" + str(approximate))
+    rospy.loginfo("[" + rospy.get_name() + "] left/features:=" + rospy.resolve_name(left_params.features))
+    rospy.loginfo("[" + rospy.get_name() + "] left/camera_info:=" + rospy.resolve_name(left_params.camera_info))
+    rospy.loginfo("[" + rospy.get_name() + "] left/set_camera_info:=" + rospy.resolve_name(left_params.service_name))
+    if (not use_service):
+        rospy.loginfo("[" + rospy.get_name() + "] ~left_camera_name:=" + left_params.camera_name)
+        rospy.loginfo("[" + rospy.get_name() + "] ~left_file_name:=" + left_params.file_name)
+
+    rospy.loginfo("[" + rospy.get_name() + "] right/features:=" + rospy.resolve_name(right_params.features))
+    rospy.loginfo("[" + rospy.get_name() + "] right/camera_info:=" + rospy.resolve_name(right_params.camera_info))
+    rospy.loginfo("[" + rospy.get_name() + "] right/set_camera_info:=" + rospy.resolve_name(right_params.service_name))
+    if (not use_service):
+        rospy.loginfo("[" + rospy.get_name() + "] ~right_camera_name:=" + right_params.camera_name)
+        rospy.loginfo("[" + rospy.get_name() + "] ~right_file_name:=" + right_params.file_name)
                 
     if (approximate == 0.0):
         sync = message_filters.TimeSynchronizer
@@ -276,7 +263,7 @@ if __name__=='__main__':
     
     # Autostart if requested
     if (autostart):
-        rospy.loginfo("Auto-starting " + rospy.get_name())
+        rospy.loginfo("Auto-starting... " + rospy.get_name())
         pub = rospy.Publisher("~goal", StereoCalibratorActionGoal, latch=True)
         msg = StereoCalibratorActionGoal()
         msg.header.stamp = rospy.Time.now()

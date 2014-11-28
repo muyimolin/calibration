@@ -1,48 +1,41 @@
 <launch>
   <arg name="image" />
-  <arg name="camera_ns" />
-  <arg name="camera" default="$(arg camera_ns)/driver" />
-  <arg name="features" default="$(arg camera_ns)/features" />
-  <arg name="camera_info" default="$(arg camera_ns)/camera_info" />
+  <arg name="camera" />
+  <arg name="driver" default="$(arg camera)/driver" />
+  <arg name="features" default="$(arg camera)/features" />
+  <arg name="camera_info" default="$(arg camera)/camera_info" />
 
   <arg name="use_service" default="True" />
   <arg name="camera_name" default="camera" />
   <arg name="file_name" default="camera.yaml" />
 
+  <arg name="pattern" default="chessboard" />
   <arg name="autostart" default="True" />
-  <arg name="viewer" default="True" />
-  <arg name="marker_size" default="5"/>
-  <arg name="marker_width" default="2"/>
-  <arg name="scaling" default="1" />
   <arg name="num_cols" default="8" />
   <arg name="num_rows" default="6" />
   <arg name="dim" default="1" />
-  <arg name="pattern" default="0" />
   <arg name="flags" default="0" />
 
+  <arg name="viewer" default="True" />
 
-  <include file="$(find image_cb_detector)/launch/image_cb_detector.launch" ns="$(arg camera_ns)">
+  <include file="$(find image_cb_detector)/launch/$(arg pattern)_detector.launch" ns="$(arg camera)">
     <arg name="image" value="$(arg image)" />
-    <arg name="viewer" value="$(arg viewer)" />
-    <arg name="marker_size" value="$(arg marker_size)"/>
-    <arg name="marker_width" value="$(arg marker_width)"/>
-    <arg name="scaling" default="$(arg scaling)" />
     <arg name="autostart" value="$(arg autostart)" />
     <arg name="num_rows" value="$(arg num_rows)" />
     <arg name="num_cols" value="$(arg num_cols)" />
     <arg name="dim" value="$(arg dim)" />
-    <arg name="pattern" value="$(arg pattern)" />
     <arg name="flags" value="$(arg flags)" />
+    <arg name="viewer" value="$(arg viewer)" />
   </include>
 
   <node type="mono_calibrator.py"
       pkg="camera_intrinsic_calibrator"
       name="mono_calibrator"
-      args="--autostart $(arg autostart) --use_service $(arg use_service) --camera_name $(arg camera_name) --file_name $(arg file_name)"
+      args="_autostart:=$(arg autostart) _use_service:=$(arg use_service) _camera_name:=$(arg camera_name) _file_name:=$(arg file_name)"
       output="screen"
       required="true">
       <remap from="autostart" to="autostart" />
-      <remap from="camera" to="$(arg camera)" />
+      <remap from="camera" to="$(arg driver)" />
       <remap from="features" to="$(arg features)" />
       <remap from="camera_info" to="$(arg camera_info)" />
   </node>

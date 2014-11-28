@@ -7,13 +7,10 @@
   <arg name="viewer" default="True" />
   <arg name="autostart" default="True" />
   <arg name="approximate" default="0.0" />
-  <arg name="marker_size" default="5"/>
-  <arg name="marker_width" default="2"/>
-  <arg name="scaling" default="1" />
   <arg name="num_cols" default="8" />
   <arg name="num_rows" default="6" />
   <arg name="dim" default="0.02943" />
-  <arg name="pattern" default="0" />
+  <arg name="pattern" default="chessboard" />
   <arg name="flags" default="0" />
   <arg name="use_service" default="True" />
 
@@ -29,38 +26,30 @@
   <arg name="right_camera_name" default="right" />
   <arg name="right_file_name" default="right.yaml" />
 
-  <include file="$(find image_cb_detector)/launch/image_cb_detector.launch" ns="$(arg left_ns)">
+  <include file="$(find image_cb_detector)/launch/$(arg pattern)_detector.launch" ns="$(arg left_ns)">
     <arg name="image" value="$(arg left)" />
     <arg name="viewer" value="$(arg viewer)" />
-    <arg name="marker_size" value="$(arg marker_size)"/>
-    <arg name="marker_width" value="$(arg marker_width)"/>
-    <arg name="scaling" default="$(arg scaling)" />
     <arg name="autostart" value="$(arg autostart)" />
     <arg name="num_rows" value="$(arg num_rows)" />
     <arg name="num_cols" value="$(arg num_cols)" />
     <arg name="dim" value="$(arg dim)" />
-    <arg name="pattern" value="$(arg pattern)" />
     <arg name="flags" value="$(arg flags)" />
   </include>
 
-  <include file="$(find image_cb_detector)/launch/image_cb_detector.launch" ns="$(arg right_ns)">
+  <include file="$(find image_cb_detector)/launch/$(arg pattern)_detector.launch" ns="$(arg right_ns)">
     <arg name="image" value="$(arg right)"/>
     <arg name="viewer" value="$(arg viewer)" />
-    <arg name="marker_size" value="$(arg marker_size)"/>
-    <arg name="marker_width" value="$(arg marker_width)"/>
-    <arg name="scaling" default="$(arg scaling)" />
     <arg name="autostart" value="$(arg autostart)" />
     <arg name="num_rows" value="$(arg num_rows)" />
     <arg name="num_cols" value="$(arg num_cols)" />
     <arg name="dim" value="$(arg dim)" />
-    <arg name="pattern" value="$(arg pattern)" />
     <arg name="flags" value="$(arg flags)" />
   </include>
 
   <node type="stereo_calibrator.py"
       pkg="camera_intrinsic_calibrator"
       name="stereo_calibrator"
-      args="--autostart $(arg autostart) --approximate $(arg approximate) --use_service $(arg use_service)"
+      args="_autostart:=$(arg autostart) _approximate:=$(arg approximate) _use_service:=$(arg use_service)"
       output="screen"
       required="true">
     <remap from="left_camera" to="$(arg left_driver)"/>

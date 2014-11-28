@@ -1,38 +1,26 @@
 #!/usr/bin/env python
 #
-# Software License Agreement (BSD License)
-#
-# Copyright (c) 2014, Oceaneering Space Systems / NASA
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-#
-#  * Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-#  * Redistributions in binary form must reproduce the above
-#    copyright notice, this list of conditions and the following
-#    disclaimer in the documentation and/or other materials provided
-#    with the distribution.
-#  * Neither the name of the Willow Garage nor the names of its
-#    contributors may be used to endorse or promote products derived
-#    from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# Copyright (c) 2014 United States Government as represented by the
+# National Aeronotics and Space Administration.  All Rights Reserved
 #
 # Author: Allison Thackston
+# Created: 24 Oct 2014
+#
+# Developed jointly by NASA/JSC and Oceaneering Space Systems
+#
+# Licensed under the NASA Open Source Agreement v1.3 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://opensource.org/licenses/NASA-1.3
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+###########################################################################
+
 import roslib; roslib.load_manifest("camera_intrinsic_calibrator")
 import rospy
 import actionlib
@@ -121,28 +109,39 @@ class MonoCalibratorServer:
         calib_flags = 0
         if goal.fix_principal_point:
             calib_flags |= cv2.CALIB_FIX_PRINCIPAL_POINT
+            rospy.loginfo("[%s] fix principle point" % self._action_name)
         if goal.fix_aspect_ratio:
             calib_flags |= cv2.CALIB_FIX_ASPECT_RATIO
+            rospy.loginfo("[%s] fix aspect ratio" % self._action_name)
         if goal.zero_tangent_dist:
             calib_flags |= cv2.CALIB_ZERO_TANGENT_DIST
+            rospy.loginfo("[%s] zero tangent dist" % self._action_name)
         if (goal.num_coeffs > 3):
             calib_flags |= cv2.CALIB_RATIONAL_MODEL
+            rospy.loginfo("[%s] rational model" % self._action_name)
         if (goal.num_coeffs < 6):
             calib_flags |= cv2.CALIB_FIX_K6
+            rospy.loginfo("[%s] fix K6" % self._action_name)
         if (goal.num_coeffs < 5):
             calib_flags |= cv2.CALIB_FIX_K5
+            rospy.loginfo("[%s] fix K5" % self._action_name)
         if (goal.num_coeffs < 4):
             calib_flags |= cv2.CALIB_FIX_K4
+            rospy.loginfo("[%s] fix K4" % self._action_name)
         if (goal.num_coeffs < 3):
             calib_flags |= cv2.CALIB_FIX_K3
+            rospy.loginfo("[%s] fix K3" % self._action_name)
         if (goal.num_coeffs < 2):
             calib_flags |= cv2.CALIB_FIX_K2
+            rospy.loginfo("[%s] fix K2" % self._action_name)
         if (goal.num_coeffs < 1):
             calib_flags |= cv2.CALIB_FIX_K1
+            rospy.loginfo("[%s] fix K1" % self._action_name)
         
         calib_ranges = None
         if (len(goal.param_ranges)==4):
             calib_ranges = goal.param_ranges
+            rospy.loginfo("[%s] params: [%f, %f, %f %f]" % (self._action_name, param_ranges[0], param_ranges[1], param_ranges[2], param_ranges[3]))
         
         self._calibrator = MonoCalibrator(self._camerainfo, flags=calib_flags, param_ranges=calib_ranges)
             
@@ -200,28 +199,15 @@ if __name__=='__main__':
     params.camera_name  = rospy.get_param("~camera_name", "camera")
     params.file_name    = rospy.get_param("~file_name", "camera.yaml")
     
-    from optparse import OptionParser
-    parser = OptionParser("%prog", description=None)
-    parser.add_option("-a", "--autostart", dest="autostart", type="string", default=autostart,help="Autostart image_calibration_detector")
-    parser.add_option("-s", "--use_service", dest="use_service", type="string", default=str(use_service), help="Use service to stet parameters")
-    parser.add_option("-c", "--camera_name", dest= "camera_name", type="string", default=params.camera_name, help="Name of the camera to use in the calibration file if not using service")
-    parser.add_option("-f", "--file_name", dest= "file_name", type="string", default=params.file_name, help="Name and location to save the calibration file if not using service")
-    
-    options, args = parser.parse_args()
-    
-    autostart = options.autostart.lower()=='true'
-    use_service = options.use_service.lower()=='true'
-    params.camera_name = options.camera_name
-    params.file_name = options.file_name
-    
-    rospy.loginfo("[%s] Settings: " % rospy.get_name() +
-                  "\n autostart           = " + str(autostart) +
-                  "\n use_service         = " + str(use_service) +
-                  "\n features topic      = " + rospy.resolve_name(params.features) +
-                  "\n camera_info topic   = " + rospy.resolve_name(params.camera_info) +
-                  "\n set_camera_info srv = " + rospy.resolve_name(params.service_name) +
-                  "\n save camera name    = " + params.camera_name +
-                  "\n save file name      = " + params.file_name )
+    # Show user the parameters used
+    rospy.loginfo("[" + rospy.get_name() + "] ~autostart:=" + str(autostart))
+    rospy.loginfo("[" + rospy.get_name() + "] ~use_service:=" + str(use_service))
+    rospy.loginfo("[" + rospy.get_name() + "] features:=" + rospy.resolve_name(params.features))
+    rospy.loginfo("[" + rospy.get_name() + "] camera_info:=" + rospy.resolve_name(params.camera_info))
+    rospy.loginfo("[" + rospy.get_name() + "] set_camera_info:=" + rospy.resolve_name(params.service_name))
+    if (not use_service):
+        rospy.loginfo("[" + rospy.get_name() + "] ~camera_name:=" + params.camera_name)
+        rospy.loginfo("[" + rospy.get_name() + "] ~file_name:=" + params.file_name)
     
     MonoCalibratorServer(rospy.get_name(), use_service, params)
     

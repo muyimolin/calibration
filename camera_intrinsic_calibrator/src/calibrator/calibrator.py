@@ -166,11 +166,12 @@ class Calibrator:
         return params
         
 class MonoCalibrator(Calibrator):
-    def __init__(self, info, flags=0, param_ranges = None):
+    def __init__(self, info, flags=0, param_ranges = None, alpha=0):
         Calibrator.__init__(self, info)
         
         self.calibrated = False
         self.calib_flags = flags
+        self.alpha = alpha
         
         self.br = cv_bridge.CvBridge()
         
@@ -285,19 +286,21 @@ class MonoCalibrator(Calibrator):
         cv.SetZero(self.P)
         
         ncm = cv.GetSubRect(self.P, (0, 0, 3, 3))
-        cv.GetOptimalNewCameraMatrix(self.intrinsics, self.distortion, self.size, 0, ncm)
-        
+        cv.GetOptimalNewCameraMatrix(self.intrinsics, self.distortion, self.size, self.alpha, ncm)
+        print self.size
         self.calibrated = True
         
         return (self.distortion, self.intrinsics, self.R, self.P)
             
-            
+#info should be for the left camera
 class StereoCalibrator(Calibrator):
-    def __init__(self, info, flags=0, param_ranges = None):
+    def __init__(self, info, flags=0, param_ranges = None, alpha=0):
         Calibrator.__init__(self, info)
             
         if not param_ranges:
             param_ranges = [0.4, 0.7, 0.4, 0.5]
+
+        self.alpha = alpha
         
         # Create monocalibrators for each camera
         self.l = MonoCalibrator(info, flags, param_ranges)
@@ -439,7 +442,8 @@ class StereoCalibrator(Calibrator):
                  self.size,
                  self.R,
                  self.T,
-                 self.l.R, self.r.R, self.l.P, self.r.P)
+                 self.l.R, self.r.R, self.l.P, self.r.P,
+                 alpha=self.alpha)
                 
 ##        print "after rectify left intrinsics"
 ##        print numpy.asarray(self.l.intrinsics)
