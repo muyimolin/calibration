@@ -35,5 +35,5 @@ rosbuild_add_boost_directories()
 #                                             src/ExtrinsicCalibratorNode.cpp
 #                       )
 #target_link_libraries(example ${PROJECT_NAME})
-rosbuild_add_executable(intractive_calibrator src/InteractiveCalibratorControl.cpp)
-rosbuild_link_boost(intractive_calibrator thread)
+rosbuild_add_executable(interactive_calibrator src/InteractiveCalibratorControl.cpp)
+rosbuild_link_boost(interactive_calibrator thread)
