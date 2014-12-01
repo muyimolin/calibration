@@ -83,7 +83,7 @@ public:
          out << YAML::EndMap;
 
          std::ofstream fout;
-         fout.open(request.file_name.c_str());
+         fout.open(request.file_name.c_str(), std::ofstream::out);
          fout << out.c_str();
          fout.close();
          return true;
