@@ -124,6 +124,11 @@ int main(int argc, char** argv){
   {
       ts.set(x, y, z, qx, qy, qz, qw, parentFrame, childFrame);
   }
+  else
+  {
+      ROS_ERROR("Could not set TF!");
+      ros::shutdown();
+  }
 
   while(nh.ok())
   {
