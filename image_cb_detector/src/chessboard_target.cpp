@@ -147,7 +147,10 @@ calibration_msgs::CalibrationPattern Chessboard::getFeatures()
 sensor_msgs::Image Chessboard::getImage()
 {
     sensor_msgs::Image calImage;
-    mono8->toImageMsg(calImage);
+    if(mono8)
+    {
+        mono8->toImageMsg(calImage);
+    }
     return calImage;
 }
 

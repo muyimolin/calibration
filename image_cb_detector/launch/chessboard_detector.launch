@@ -14,7 +14,7 @@
   <node type="calibration_detector"
         pkg="image_cb_detector"
         name="chessboard_detector"
-        args="_autostart:=$(arg autostart) _num_x:=$(arg num_cols) _num_y:=$(arg num_rows) _dim:=$(arg dim) _flags:=$(arg flags)"
+        args="_autostart:=$(arg autostart) _num_x:=$(arg num_cols) _num_y:=$(arg num_rows) _dim_x:=$(arg dim) _dim_y:=$(arg dim) _flags:=$(arg flags)"
         output="screen"
         required="true">
     <remap from="image_raw" to="$(arg image)" />
