@@ -1,30 +1,63 @@
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+cmake_minimum_required(VERSION 2.8.3)
+project(joint_states_settler)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+find_package(catkin REQUIRED COMPONENTS roscpp actionlib actionlib_msgs sensor_msgs settlerlib calibration_msgs)
 
-rosbuild_init()
+find_package(Boost REQUIRED COMPONENTS thread)
 
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+add_action_files(
+  DIRECTORY 
+    action
+  FILES 
+    Config.action
+)
 
-rosbuild_genmsg()
-# rosbuild_gensrv()
+generate_messages(DEPENDENCIES actionlib_msgs sensor_msgs calibration_msgs)
 
-rosbuild_add_library(${PROJECT_NAME} src/joint_states_deflater.cpp
-                                     src/joint_states_settler.cpp)
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES ${PROJECT_NAME}
+  CATKIN_DEPENDS message_runtime roscpp actionlib actionlib_msgs sensor_msgs settlerlib calibration_msgs
+  DEPENDS Boost
+)
 
-rosbuild_add_boost_directories()
-rosbuild_add_executable(joint_states_settler_action src/joint_states_settler_action.cpp)
+include_directories(
+  include
+  ${Boost_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
+)
+
+add_library(${PROJECT_NAME} 
+  src/joint_states_deflater.cpp
+  src/joint_states_settler.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  ${catkin_LIBRARIES}
+)
+add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
+
+add_executable(joint_states_settler_action src/joint_states_settler_action.cpp)
 target_link_libraries(joint_states_settler_action ${PROJECT_NAME})
-rosbuild_link_boost(joint_states_settler_action thread)
 
-rosbuild_add_executable(view_interval src/view_interval.cpp)
+add_executable(view_interval src/view_interval.cpp)
+target_link_libraries(view_interval ${PROJECT_NAME})
 
-add_subdirectory(test EXCLUDE_FROM_ALL)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+catkin_add_gtest(joint_states_deflater_unittest test/joint_states_deflater_unittest.cpp)
+target_link_libraries(joint_states_deflater_unittest ${PROJECT_NAME})
+catkin_add_gtest(joint_states_settler_unittest test/joint_states_settler_unittest.cpp)
+target_link_libraries(joint_states_settler_unittest ${PROJECT_NAME})
+
+install(TARGETS ${PROJECT_NAME} joint_states_settler_action view_interval
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+)
