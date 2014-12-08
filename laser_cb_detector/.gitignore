@@ -1,8 +1,0 @@
-src/laser_cb_detector
-msg/ConfigAction.msg
-msg/ConfigActionFeedback.msg
-msg/ConfigActionGoal.msg
-msg/ConfigActionResult.msg
-msg/ConfigFeedback.msg
-msg/ConfigGoal.msg
-msg/ConfigResult.msg

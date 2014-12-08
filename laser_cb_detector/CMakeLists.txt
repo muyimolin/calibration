@@ -1,39 +1,73 @@
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+cmake_minimum_required(VERSION 2.8.3)
+project(laser_cb_detector)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+find_package(catkin REQUIRED COMPONENTS message_generation roscpp actionlib actionlib_msgs std_msgs calibration_msgs message_filters cv_bridge)
 
-rosbuild_find_ros_package(actionlib_msgs)
-include(${actionlib_msgs_PACKAGE_PATH}/cmake/actionbuild.cmake)
-genaction()
+find_package(Boost REQUIRED COMPONENTS signals thread)
+find_package(OpenCV REQUIRED)
 
-rosbuild_init()
+add_action_files(
+  DIRECTORY 
+    action
+  FILES 
+    Config.action
+)
 
-rosbuild_genmsg()
+generate_messages(DEPENDENCIES actionlib_msgs std_msgs calibration_msgs)
 
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES ${PROJECT_NAME}
+  CATKIN_DEPENDS message_runtime roscpp actionlib actionlib_msgs std_msgs calibration_msgs message_filters cv_bridge
+  DEPENDS Boost OpenCV
+)
 
-rosbuild_add_library(${PROJECT_NAME} src/cv_laser_bridge.cpp
-                                     src/laser_cb_detector.cpp
-                                     src/laser_interval_calc.cpp)
+include_directories(
+  include
+  ${Boost_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
+)
 
-rosbuild_add_boost_directories()
-rosbuild_add_executable(laser_cb_detector_node src/laser_cb_detector_node.cpp)
+add_library(${PROJECT_NAME}
+    src/cv_laser_bridge.cpp
+    src/laser_cb_detector.cpp
+    src/laser_interval_calc.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}
+  ${Boost_LIBRARIES} 
+  ${OpenCV_LIBRARIES} 
+  ${catkin_LIBRARIES}
+)
+add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
+
+add_executable(laser_cb_detector_node src/laser_cb_detector_node.cpp)
 target_link_libraries(laser_cb_detector_node ${PROJECT_NAME})
-rosbuild_link_boost(laser_cb_detector_node thread)
 
-rosbuild_add_executable(laser_interval_calc_node src/laser_interval_calc_node.cpp)
+add_executable(laser_interval_calc_node src/laser_interval_calc_node.cpp)
 target_link_libraries(laser_interval_calc_node ${PROJECT_NAME})
-rosbuild_link_boost(laser_interval_calc_node signals)
 
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+catkin_add_gtest(cv_laser_bridge_unittest     test/cv_laser_bridge_unittest.cpp)
+catkin_add_gtest(laser_cb_detector_unittest   test/laser_cb_detector_unittest.cpp)
+catkin_add_gtest(laser_interval_calc_unittest test/laser_interval_calc_unittest.cpp)
+target_link_libraries(cv_laser_bridge_unittest     ${PROJECT_NAME})
+target_link_libraries(laser_cb_detector_unittest   ${PROJECT_NAME})
+target_link_libraries(laser_interval_calc_unittest ${PROJECT_NAME})
 
-add_subdirectory(test EXCLUDE_FROM_ALL)
+install(TARGETS laser_cb_detector_node laser_interval_calc_node
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+)
+
+install(DIRECTORY cfg test/data
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
