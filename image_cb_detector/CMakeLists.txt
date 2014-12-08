@@ -50,17 +50,17 @@ target_link_libraries(calibration_targets
   ${OpenCV_LIBRARIES} 
   ${catkin_LIBRARIES}
 )
-add_dependencies(calibration_targets ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(calibration_targets ${${PROJECT_NAME}_EXPORTED_TARGETS})
 add_dependencies(calibration_targets ${catkin_EXPORTED_TARGETS})
 
 add_executable(image_annotator src/image_annotator.cpp)
 target_link_libraries(image_annotator ${Boost_LIBRARIES} ${TinyXML_LIBRARIES} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
-add_dependencies(image_annotator ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(image_annotator ${${PROJECT_NAME}_EXPORTED_TARGETS})
 add_dependencies(image_annotator ${catkin_EXPORTED_TARGETS})
 
 add_executable(calibration_detector src/calibration_detector_server.cpp)
 target_link_libraries(calibration_detector ${Boost_LIBRARIES} ${TinyXML_LIBRARIES} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
-add_dependencies(calibration_detector ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(calibration_detector ${${PROJECT_NAME}_EXPORTED_TARGETS})
 add_dependencies(calibration_detector ${catkin_EXPORTED_TARGETS})
 
 install(TARGETS image_annotator calibration_detector
