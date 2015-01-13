@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package>
+  <name>settlerlib</name>
+  <version>0.0.0</version>
+  <description>A set of routines to help with creating a settler</description>
+
+  <maintainer email="allison.thackston@nasa.gov">Allison Thackston</maintainer>
+  <author email="todo@todo.com">Vijay Pradeep</author>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>calibration_msgs</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>calibration_msgs</run_depend>
+
+  <export>
+  </export>
+</package>

@@ -1,36 +1,36 @@
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+cmake_minimum_required(VERSION 2.8.3)
+project(calibration_capture)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+find_package(catkin REQUIRED COMPONENTS message_generation rospy actionlib actionlib_msgs trajectory_msgs calibration_msgs)
 
-rosbuild_find_ros_package(actionlib_msgs)
-include(${actionlib_msgs_PACKAGE_PATH}/cmake/actionbuild.cmake)
-genaction()
+catkin_python_setup()
 
-rosbuild_init()
+add_action_files(
+  DIRECTORY 
+    action
+  FILES 
+    CaptureManager.action
+)
 
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+add_message_files(
+  DIRECTORY 
+    msg
+  FILES 
+    Command.msg
+    Measurement.msg
+)
 
-#uncomment if you have defined messages
-rosbuild_genmsg()
-#uncomment if you have defined services
-#rosbuild_gensrv()
+generate_messages(DEPENDENCIES actionlib_msgs trajectory_msgs calibration_msgs)
 
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-#rosbuild_add_executable(calibration_controller include/nasa_r2_vision_calibration/CalibrationController.h
-#                                               src/node/CalibrationController.cpp
-#                       )
-#target_link_libraries(example ${PROJECT_NAME})
+catkin_package(
+  CATKIN_DEPENDS message_runtime actionlib actionlib_msgs trajectory_msgs calibration_msgs
+)
+
+catkin_install_python(
+  PROGRAMS
+    scripts/capture_exec.py
+    scripts/capture_manager.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

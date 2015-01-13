@@ -1,8 +1,0 @@
-CMakeFiles/
-build/
-bin/
-lib/
-msg_gen/
-*.pyc
-*/src/*/msg/
-*.user
