@@ -22,7 +22,6 @@
   <run_depend>laser_cb_detector</run_depend>
   <run_depend>monocam_settler</run_depend>
   <run_depend>settlerlig</run_depend>
-  <run_depend>test_dir</run_depend>
 
   <export>
     <metapackage/>
