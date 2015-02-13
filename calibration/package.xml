@@ -15,7 +15,7 @@
   <run_depend>calibration_msgs</run_depend>
   <run_depend>camera_intrinsic_calibrator</run_depend>
   <run_depend>dynamic_transform_publisher</run_depend>
-  <run_depend>extrensic_calibrator</run_depend>
+  <run_depend>extrinsic_calibrator</run_depend>
   <run_depend>image_cb_detector</run_depend>
   <run_depend>interval_intersection</run_depend>
   <run_depend>joint_states_settler</run_depend>
