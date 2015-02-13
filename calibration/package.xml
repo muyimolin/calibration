@@ -21,7 +21,7 @@
   <run_depend>joint_states_settler</run_depend>
   <run_depend>laser_cb_detector</run_depend>
   <run_depend>monocam_settler</run_depend>
-  <run_depend>settlerlig</run_depend>
+  <run_depend>settlerlib</run_depend>
 
   <export>
     <metapackage/>
