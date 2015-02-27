@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(laser_cb_detector)
 
-find_package(catkin REQUIRED COMPONENTS message_generation roscpp actionlib actionlib_msgs std_msgs calibration_msgs message_filters cv_bridge)
+find_package(catkin REQUIRED COMPONENTS message_generation roscpp roslib actionlib actionlib_msgs std_msgs calibration_msgs message_filters cv_bridge)
 
 find_package(Boost REQUIRED COMPONENTS signals thread)
 find_package(OpenCV REQUIRED)
@@ -18,7 +18,7 @@ generate_messages(DEPENDENCIES actionlib_msgs std_msgs calibration_msgs)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS message_runtime roscpp actionlib actionlib_msgs std_msgs calibration_msgs message_filters cv_bridge
+  CATKIN_DEPENDS message_runtime roscpp roslib actionlib actionlib_msgs std_msgs calibration_msgs message_filters cv_bridge
   DEPENDS Boost OpenCV
 )
 

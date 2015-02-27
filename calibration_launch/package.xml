@@ -15,7 +15,7 @@
   <run_depend>image_cb_detector</run_depend>
   <run_depend>laser_cb_detector</run_depend>
   <run_depend>image_view</run_depend>
-  <run_depend>message_filters-zmq</run_depend>
+  <run_depend>message_filters</run_depend>
   <run_depend>calibration_capture</run_depend>
   <run_depend>monocam_settler</run_depend>
   <run_depend>joint_states_settler</run_depend>
