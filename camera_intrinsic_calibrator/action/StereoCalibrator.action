@@ -1,0 +1,13 @@
+bool fix_principal_point
+bool fix_aspect_ratio
+bool zero_tangent_dist
+uint16 num_coeffs
+float64[] param_ranges
+float64 alpha
+---
+sensor_msgs/CameraInfo left_result
+sensor_msgs/CameraInfo right_result
+---
+CalibrationCoverage stereo_feedback
+CalibrationCoverage left_feedback
+CalibrationCoverage right_feedback

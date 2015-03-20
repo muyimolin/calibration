@@ -1,0 +1,31 @@
+<launch>
+
+  <param name="cb_annotator/marker_size" value="20" />
+
+  <!-- Chains -->
+  <include file="$(find calibration_launch)/capture_data/chain_settler.launch" ns="gripper_chain" />
+
+  <include file="$(find calibration_launch)/capture_data/chain_settler.launch" ns="head_chain" />
+
+
+  <!-- Cameras -->
+  <group ns="/camera">
+    <node pkg="image_proc" type="image_proc" name="image_proc" />
+    <node pkg="topic_tools" type="mux" name="mux_config" args="image image_raw image_rect" />
+    <include file="$(find calibration_launch)/capture_data/monocam_pipeline.launch">
+      <arg name="scaling" value="0.25" />
+      <arg name="image_topic" value="image" />
+    </include>
+  </group>
+
+  <!-- Intersections -->
+  <node type="interval_intersection_action"
+        pkg="interval_intersection"
+        name="interval_intersection"
+        output="screen">
+    <remap from="camera" to="camera/settled_interval" />
+    <remap from="gripper_chain" to="gripper_chain/settled_interval" />
+    <remap from="head_chain" to="head_chain/settled_interval" />
+  </node>
+
+</launch>

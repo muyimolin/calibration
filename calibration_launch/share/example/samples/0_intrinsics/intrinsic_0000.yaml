@@ -1,0 +1,14 @@
+camera_measurements:
+- {cam_id: camera, config: intrinsic_cb_8x6}
+joint_commands:
+- controller: head_controller
+  segments:
+  - duration: 2.0
+    positions: [0.0]
+- controller: gripper_controller
+  segments:
+  - duration: 2.0
+    positions: [1.7491875901719594]
+sample_id: intrinsic_0000
+target: {chain_id: floating, target_id: intrinsic_cb_8x6}
+repeat: true

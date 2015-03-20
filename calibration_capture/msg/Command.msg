@@ -1,0 +1,2 @@
+string controller
+trajectory_msgs/JointTrajectoryPoint segments

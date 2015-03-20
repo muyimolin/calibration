@@ -1,0 +1,13 @@
+<launch>
+
+  <arg name="image_topic" default="annotated"/>
+  <arg name="autosize" default="True"/>
+
+  <node type="image_view"
+        pkg="image_view"
+        name="annotated_viewer">
+    <remap from="image" to="$(arg image_topic)" />
+    <param name="autosize" type="bool" value="$(arg autosize)" />
+  </node>
+
+</launch>

@@ -1,0 +1,66 @@
+<launch>
+  <arg name="left_ns" />
+  <arg name="right_ns" />
+  <arg name="right" />
+  <arg name="left" />
+
+  <arg name="viewer" default="True" />
+  <arg name="autostart" default="True" />
+  <arg name="approximate" default="0.0" />
+  <arg name="num_cols" default="8" />
+  <arg name="num_rows" default="6" />
+  <arg name="dim" default="0.02943" />
+  <arg name="pattern" default="chessboard" />
+  <arg name="flags" default="0" />
+  <arg name="use_service" default="True" />
+
+  <arg name="left_driver" default="$(arg left_ns)/driver"/>
+  <arg name="left_features" default="$(arg left_ns)/features" />
+  <arg name="left_camera_info" default="$(arg left_ns)/camera_info" />
+  <arg name="left_camera_name" default="left" />
+  <arg name="left_file_name" default="left.yaml" />
+
+  <arg name="right_driver" default="$(arg right_ns)/driver"/>
+  <arg name="right_features" default="$(arg right_ns)/features" />
+  <arg name="right_camera_info" default="$(arg right_ns)/camera_info" />
+  <arg name="right_camera_name" default="right" />
+  <arg name="right_file_name" default="right.yaml" />
+
+  <include file="$(find image_cb_detector)/launch/$(arg pattern)_detector.launch" ns="$(arg left_ns)">
+    <arg name="image" value="$(arg left)" />
+    <arg name="viewer" value="$(arg viewer)" />
+    <arg name="autostart" value="$(arg autostart)" />
+    <arg name="num_rows" value="$(arg num_rows)" />
+    <arg name="num_cols" value="$(arg num_cols)" />
+    <arg name="dim" value="$(arg dim)" />
+    <arg name="flags" value="$(arg flags)" />
+  </include>
+
+  <include file="$(find image_cb_detector)/launch/$(arg pattern)_detector.launch" ns="$(arg right_ns)">
+    <arg name="image" value="$(arg right)"/>
+    <arg name="viewer" value="$(arg viewer)" />
+    <arg name="autostart" value="$(arg autostart)" />
+    <arg name="num_rows" value="$(arg num_rows)" />
+    <arg name="num_cols" value="$(arg num_cols)" />
+    <arg name="dim" value="$(arg dim)" />
+    <arg name="flags" value="$(arg flags)" />
+  </include>
+
+  <node type="stereo_calibrator.py"
+      pkg="camera_intrinsic_calibrator"
+      name="stereo_calibrator"
+      args="_autostart:=$(arg autostart) _approximate:=$(arg approximate) _use_service:=$(arg use_service)"
+      output="screen"
+      required="true">
+    <remap from="left_camera" to="$(arg left_driver)"/>
+    <remap from="right_camera" to="$(arg right_driver)"/>
+    <remap from="left" to="$(arg left_ns)"/>
+    <remap from="right" to="$(arg right_ns)"/>
+    <remap from="$(arg left_ns)/driver" to="$(arg left_driver)"/>
+    <remap from="$(arg left_ns)/features" to="$(arg left_features)"/>
+    <remap from="$(arg left_ns)/camera_info" to="$(arg left_camera_info)"/>
+    <remap from="$(arg right_ns)/driver" to="$(arg right_driver)"/>
+    <remap from="$(arg right_ns)/features" to="$(arg right_features)"/>
+    <remap from="$(arg right_ns)/camera_info" to="$(arg right_camera_info)"/>
+  </node>
+</launch>

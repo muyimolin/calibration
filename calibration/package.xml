@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package>
+  <name>calibration</name>
+  <version>0.0.0</version>
+  <description>The calibration package</description>
+
+  <maintainer email="allison.thackston@nasa.gov">Allison Thackston</maintainer>
+  
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>calibration_capture</run_depend>
+  <run_depend>calibration_estimation</run_depend>
+  <run_depend>calibration_launch</run_depend>
+  <run_depend>calibration_msgs</run_depend>
+  <run_depend>camera_intrinsic_calibrator</run_depend>
+  <run_depend>dynamic_transform_publisher</run_depend>
+  <run_depend>extrinsic_calibrator</run_depend>
+  <run_depend>image_cb_detector</run_depend>
+  <run_depend>interval_intersection</run_depend>
+  <run_depend>joint_states_settler</run_depend>
+  <run_depend>laser_cb_detector</run_depend>
+  <run_depend>monocam_settler</run_depend>
+  <run_depend>settlerlib</run_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>

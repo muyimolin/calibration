@@ -1,0 +1,17 @@
+<launch>
+
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find calibration_launch)/example/robots/r2d2.xacro'" />
+
+  <include file="$(find calibration_capture)/launch/capture_manager.launch" >
+    <arg name="hardware_config" value="$(find calibration_launch)/example/hardware_config"/>
+    <arg name="system_config" value="$(find calibration_launch)/example/hardware_config/system.yaml"/>
+  </include>
+
+  <node type="capture_exec.py"
+        pkg="calibration_capture"
+        name="capture_exec"
+        output="screen">
+        <param name="samples_dir" value="$(find calibration_launch)/example/samples"/>
+  </node>
+
+</launch>

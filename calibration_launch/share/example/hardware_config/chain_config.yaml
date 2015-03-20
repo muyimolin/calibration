@@ -1,0 +1,28 @@
+# ----- Gripper -----
+gripper_chain:
+  settler_config:  /gripper_chain/settler_config
+
+  configs:
+    tight_tol:
+      settler:
+        joint_names:
+        - gripper_extension
+        tolerances:
+        - 0.002
+        max_step:   1.0
+        cache_size: 1500
+
+# ----- Head -----
+head_chain:
+  settler_config:  /head_chain/settler_config
+
+  configs:
+    tight_tol:
+      settler:
+        joint_names:
+        - head_swivel
+        tolerances:
+        - 0.002
+        max_step:   1.0
+        cache_size: 1500
+

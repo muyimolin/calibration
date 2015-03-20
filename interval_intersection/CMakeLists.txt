@@ -1,33 +1,60 @@
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+cmake_minimum_required(VERSION 2.8.3)
+project(interval_intersection)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+find_package(catkin REQUIRED COMPONENTS roscpp actionlib actionlib_msgs calibration_msgs)
 
-rosbuild_init()
+find_package(Boost REQUIRED COMPONENTS thread)
 
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+add_action_files(
+  DIRECTORY 
+    action
+  FILES 
+    Config.action
+)
 
-#uncomment if you have defined messages
-rosbuild_genmsg()
+generate_messages(DEPENDENCIES actionlib_msgs calibration_msgs)
 
-#common commands for building c++ executables and libraries
-rosbuild_add_library(${PROJECT_NAME} src/interval_intersection.cpp)
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES ${PROJECT_NAME}
+  CATKIN_DEPENDS message_runtime roscpp actionlib actionlib_msgs calibration_msgs
+  DEPENDS Boost
+)
 
-rosbuild_add_executable(interval_intersection_node src/interval_intersection_node.cpp)
+include_directories(
+  include
+  ${Boost_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
+)
+
+add_library(${PROJECT_NAME} 
+  src/interval_intersection.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  ${catkin_LIBRARIES}
+)
+add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
+
+add_executable(interval_intersection_node src/interval_intersection_node.cpp)
 target_link_libraries(interval_intersection_node ${PROJECT_NAME})
 
-rosbuild_add_boost_directories()
-rosbuild_add_executable(interval_intersection_action src/interval_intersection_action.cpp)
+add_executable(interval_intersection_action src/interval_intersection_action.cpp)
 target_link_libraries(interval_intersection_action ${PROJECT_NAME})
-rosbuild_link_boost(interval_intersection_action thread)
 
-add_subdirectory(test EXCLUDE_FROM_ALL)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+catkin_add_gtest(interval_intersection_unittest test/interval_intersection_unittest.cpp)
+target_link_libraries(interval_intersection_unittest ${PROJECT_NAME})
+
+install(TARGETS ${PROJECT_NAME} interval_intersection_node interval_intersection_action
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+)

@@ -1,0 +1,9 @@
+gripper_controller:
+  topic: cal_controller/command
+  joint_names:
+  - gripper_extension
+
+head_controller:
+  topic: cal_controller/command
+  joint_names:
+  - head_swivel

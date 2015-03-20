@@ -1,0 +1,8 @@
+<library path="lib/libcalibration_targets">
+  <class name="image_cb_detector/chessboard_target" type="calibration_target::Chessboard" base_class_type="calibration_target_base::CalibrationTarget">
+    <description>This is a checkerboard target plugin.</description>
+  </class>
+  <class name="image_cb_detector/circles_target" type="calibration_target::Circles" base_class_type="calibration_target_base::CalibrationTarget">
+    <description>This is a checkerboard target plugin.</description>
+  </class>
+</library>

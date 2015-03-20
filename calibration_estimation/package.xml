@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package>
+  <name>calibration_estimation</name>
+  <version>0.0.0</version>
+  <description>Runs an optimization to estimate a robot's kinematic parameters</description>
+
+  <author email="todo@todo.com">Vijay Pradeep</author>
+  <author email="todo@todo.com">Michael Ferguson</author>
+  <maintainer email="allison.thackston@nasa.gov">Allison Thackston</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>calibration_msgs</run_depend>
+  <run_depend>visualization_msgs</run_depend>
+  <!-- <run_depend>urdf_python</run_depend>  for parsing URDF (currently a modified version is held internally) -->
+  <run_depend>tf</run_depend>  <!-- tf.transformations for angle-axis/RPY conversions -->
+  <run_depend>python-scipy</run_depend>
+
+  <export>
+  </export>
+</package>
