@@ -32,7 +32,7 @@
 #include <image_cb_detector/image_converter.h>
 #include <dynamic_reconfigure/server.h>
 #include <image_cb_detector/CirclesConfig.h>
-
+#include <boost/thread.hpp>
 namespace calibration_target
 {
 class Circles : public calibration_target_base::CalibrationTarget

@@ -32,7 +32,7 @@
 #include <image_cb_detector/image_converter.h>
 #include <dynamic_reconfigure/server.h>
 #include <image_cb_detector/ChessboardConfig.h>
-
+#include <boost/thread.hpp>
 namespace calibration_target
 {
 class Chessboard : public calibration_target_base::CalibrationTarget
